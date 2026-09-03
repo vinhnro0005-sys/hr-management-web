@@ -1,2 +1,2 @@
 # hr-management-web
-Website quản lý nhân sự sử dụng FastAPI và MySQL
+A Human Resource Management web application built with FastAPI, MySQL, SQLAlchemy, Jinja2, and Bootstrap.
