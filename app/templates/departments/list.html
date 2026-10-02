@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý phòng ban</title>
+</head>
+<body>
+    <h1>Danh sách phòng ban</h1>
+    <form method="post" action="/departments/create">
+        <label for="name">Tên phòng ban:</label>
+        <input
+            id="name"
+            name="name"
+            type="text"
+            maxlength="100"
+            required
+        >
+        <button type="submit">Thêm</button>
+    </form>
+    {% if error %}
+    <p>{{error}}</p>
+    {% endif %}
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Tên phòng ban</th>
+            <th>Thao tác</th>
+        </tr>
+        {% for department in departments %}
+        <tr>
+            <td>{{department.id}}</td>
+            <td>{{department.name}}</td>
+            <td>
+                <a href = "/departments/{{ department.id }}/edit">Sửa</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>

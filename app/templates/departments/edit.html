@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sửa Phòng Ban</title>
+</head>
+<body>
+    <h1>SỬa phòng ban</h1>
+    {% if error %}
+    <p>{{error}}</p>
+    {%endif%}
+    <form method = "post" action = "/departments/{{ department.id }}/edit">
+        <label for = "name">Tên Phòng Ban:</label>
+        <input
+            id = "name"
+            name = "name"
+            type = "text"
+            value = "{{ department.name }}"
+            maxlength = "100"
+            required
+        >
+        <button type = "submit">Lưu</button>
+    </form>
+    <a href = "/departments">QUay lại danh sách</a>
+
+</body>
+</html>
