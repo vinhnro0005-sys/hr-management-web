@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý nhân viên</title>
+</head>
+<body>
+    <h1>Danh sách nhân viên</h1>
+    <a href="/employees/create">Thêm nhân viên</a>
+    <a href="/departments">Quản lý phòng ban</a>
+    <table border="1">
+        <tr>
+            <th>Mã nhân viên</th>
+            <th>Họ tên</th>
+            <th>Phòng ban</th>
+            <th>Chức vụ</th>
+            <th>Trạng thái</th>
+        </tr>
+        {% for employee, department_name in employees %}
+        <tr>
+            <td>{{ employee.id }}</td>
+            <td>
+                <a href="/employees/{{employee.id}}">
+                    {{employee.name}}
+                </a>
+            </td>
+            <td>{{ department_name }}</td>
+            <td>{{ employee.position or "" }}</td>
+            <td>{{ employee.status }}</td>
+        </tr>
+        {%else%}
+        <tr>
+            <td colspan="5">Khong co nhan vien phu hop</td>
+        </tr>
+        {%endfor%}
+
+        <form method="get" action="/employees">
+            <input
+                name="q"
+                value="{{ q }}"
+                placeholder="Nhập mã hoặc tên nhân viên"
+            >
+
+            <select name="department_id">
+                <option value="">Tất cả phòng ban</option>
+
+                {% for department in departments %}
+                <option
+                    value="{{ department.id }}"
+                    {% if selected_department == department.id|string %}
+                    selected
+                    {% endif %}
+                >
+                    {{ department.name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <select name="status">
+                <option value="">Tất cả trạng thái</option>
+                <option
+                    value="Active"
+                    {% if selected_status == "Active" %}selected{% endif %}
+                >
+                    Đang hoạt động
+                </option>
+                <option
+                    value="Inactive"
+                    {% if selected_status == "Inactive" %}selected{% endif %}
+                >
+                    Ngừng hoạt động
+                </option>
+            </select>
+
+            <select name="position">
+                <option value="">Tất cả chức vụ</option>
+
+                {% for position_name in positions %}
+                <option
+                    value="{{ position_name }}"
+                    {% if selected_position == position_name %}
+                    selected
+                    {% endif %}
+                >
+                    {{ position_name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Tìm / Lọc</button>
+            <a href="/employees">Xóa bộ lọc</a>
+        </form>
+
+    </table>
+
+</body>
+</html>

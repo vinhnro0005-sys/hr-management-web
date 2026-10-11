@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết nhân viên</title>
+</head>
+<body>
+    <h1>Hồ sơ nhân viên</h1>
+    <p>
+    <a href="/employees/{{ employee.id }}/edit">Sửa thông tin</a>
+    </p>
+    <p>Mã: {{ employee.id }}</p>
+    <p>Họ tên: {{ employee.name }}</p>
+    <p>Phòng ban: {{ department.name }}</p>
+    <p>Chức vụ: {{ employee.position or "Chưa cập nhật" }}</p>
+    <p>Ngày sinh: {{ employee.birthday or "Chưa cập nhật" }}</p>
+    <p>Giới tính: {{ employee.gender or "Chưa cập nhật" }}</p>
+    <p>Điện thoại: {{ employee.phone or "Chưa cập nhật" }}</p>
+    <p>Email: {{ employee.email or "Chưa cập nhật" }}</p>
+    <p>Địa chỉ: {{ employee.address or "Chưa cập nhật" }}</p>
+    <p>Ngày vào làm: {{ employee.start_date or "Chưa cập nhật" }}</p>
+    <p>Trạng thái: {{ employee.status }}</p>
+
+
+    {% if employee.status=="Active" %}
+    <form
+        method="post"
+        action="/employees/{{employee.id}}/deactivate"
+    >
+        <button type="submit">Ngung hoat dong</button>
+    </form>
+    {%else%}
+    <p>Nhan vien da ngung hoat dong</p>
+    {%endif%}
+    <a href="/employees">Quay lại danh sách</a>
+</body>
+</html>

@@ -10,7 +10,7 @@
 
 ## 1.1. Mục tiêu
 
-Xây dựng một **website quản lý nhân sự** hỗ trợ doanh nghiệp quản lý tập trung thông tin nhân viên thông qua giao diện web.
+Xây dựng một **website quản lý nhân sự** hỗ trợ doanh nghiệ thông tin nhân viên thông qua gip quản lý tập trungao diện web.
 
 Website cho phép:
 
