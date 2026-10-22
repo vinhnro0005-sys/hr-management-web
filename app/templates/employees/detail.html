@@ -15,7 +15,7 @@
       </p>
     </div>
     {% if employee.status == 'Active' %}
-      <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-confirm="Ngừng hoạt động nhân viên {{ employee.name }} ({{ employee.id }})? Hồ sơ sẽ được giữ lại.">{{ csrf_field() }}<button type="submit" class="button button-danger">Ngừng hoạt động</button>
+      <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-success="Đã chuyển nhân viên sang ngừng hoạt động." data-confirm-title="Ngừng hoạt động nhân viên?" data-confirm="Ngừng hoạt động nhân viên {{ employee.name }} ({{ employee.id }})? Hồ sơ sẽ được giữ lại.">{{ csrf_field() }}<button type="submit" class="button button-danger">Ngừng hoạt động</button>
       </form>
     {% endif %}
   </section>

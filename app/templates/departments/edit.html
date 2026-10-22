@@ -5,7 +5,7 @@
   <a class="text-link" href="/departments">{{ icon('arrow') }} Danh sách phòng ban</a>
 {% endblock %}
 {% block content %}
-  <form class="panel compact-form" method="post" action="/departments/{{ department.id }}/edit">{{ csrf_field() }}<div class="form-intro">
+  <form class="panel compact-form" method="post" action="/departments/{{ department.id }}/edit" data-success="Đã cập nhật phòng ban." data-highlight-field="name">{{ csrf_field() }}<div class="form-intro">
       <p class="eyebrow">Phòng ban {{ department.id }}</p>
       <h2>Thông tin phòng ban</h2>
     </div>

@@ -14,7 +14,7 @@
       </div>
       <span class="section-marker" aria-hidden="true">{{ icon('people') }}</span>
     </div>
-    <form class="filter-form" method="get" action="/employees">
+    <form class="filter-form" method="get" action="/employees" data-loading-target=".directory-panel">
       <div class="field search-field">
         <label for="q">Tìm nhân viên</label>
         <div class="input-icon">{{ icon('search') }}<input id="q" name="q" value="{{ q }}" placeholder="Nhập mã hoặc họ tên">
@@ -47,11 +47,12 @@
         </select>
       </div>
       <div class="filter-actions">
-        <button class="button button-primary" type="submit">Tìm / Lọc</button>
+        <button class="button button-primary" type="submit">{{ icon('search') }} Tìm / Lọc</button>
         <a class="text-link" href="/employees">Xóa bộ lọc</a>
       </div>
     </form>
     <p class="table-hint" id="employee-table-hint">Cuộn ngang để xem đầy đủ thông tin và thao tác.</p>
+    <div class="table-region">
     <div class="table-scroll" role="region" aria-label="Bảng nhân viên" aria-describedby="employee-table-hint" tabindex="0">
       <table class="employee-table">
         <caption class="sr-only">Danh sách nhân viên và các thao tác xem, sửa hồ sơ</caption>
@@ -66,7 +67,7 @@
         </thead>
         <tbody>
           {% for employee, department_name in employees %}
-            <tr>
+            <tr data-row-key="{{ employee.id }}" style="--i: {{ loop.index0 }}">
               <td>
                 <div class="person-cell">{{ avatar() }}<div>
                     <a class="person-name" href="/employees/{{ employee.id|urlencode }}">{{ employee.name }}</a>
@@ -79,8 +80,8 @@
               <td>{{ status_badge(employee.status) }}</td>
               <td class="action-cell">
                 <div class="row-actions">
-                  <a class="text-link" href="/employees/{{ employee.id|urlencode }}" aria-label="Xem hồ sơ {{ employee.name }}">Xem</a>
-                  <a class="button button-small" href="/employees/{{ employee.id|urlencode }}/edit" aria-label="Sửa hồ sơ {{ employee.name }}">{{ icon('edit') }} Sửa</a>
+                  <a class="button button-small button-ghost action-view" href="/employees/{{ employee.id|urlencode }}" aria-label="Xem hồ sơ {{ employee.name }}">{{ icon('eye') }} Xem</a>
+                  <a class="button button-small action-edit" href="/employees/{{ employee.id|urlencode }}/edit" aria-label="Sửa hồ sơ {{ employee.name }}">{{ icon('edit') }} Sửa</a>
                 </div>
               </td>
             </tr>
@@ -96,6 +97,7 @@
           {% endfor %}
         </tbody>
       </table>
+    </div>
     </div>
     <div class="table-footer">Hiển thị {{ employees|length }} kết quả <span>Chọn tên nhân viên để xem hồ sơ</span>
     </div>

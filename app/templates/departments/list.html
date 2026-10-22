@@ -9,7 +9,7 @@
           <h2>Phòng ban trong tổ chức</h2>
           <p>{{ departments|length }} phòng ban</p>
         </div>{{ icon('building') }}</div>
-      <div class="table-scroll" role="region" aria-label="Bảng phòng ban" tabindex="0">
+      <div class="table-scroll table-region" role="region" aria-label="Bảng phòng ban" tabindex="0">
         <table class="department-table">
           <caption class="sr-only">Danh sách phòng ban</caption>
           <thead>
@@ -21,11 +21,13 @@
           </thead>
           <tbody>
             {% for department in departments %}
-              <tr>
+              <tr data-row-key="{{ department.name }}" style="--i: {{ loop.index0 }}">
                 <td class="mono">{{ department.id }}</td>
                 <td class="department-name">{{ department.name }}</td>
                 <td class="action-cell">
-                  <a class="button button-small" href="/departments/{{ department.id }}/edit" aria-label="Sửa phòng ban {{ department.name }}">{{ icon('edit') }} Sửa</a>
+                  <div class="row-actions">
+                    <a class="button button-small action-edit" href="/departments/{{ department.id }}/edit" aria-label="Sửa phòng ban {{ department.name }}">{{ icon('edit') }} Sửa</a>
+                  </div>
                 </td>
               </tr>
             {% else %}
@@ -45,7 +47,7 @@
       <div class="section-marker">{{ icon('plus') }}</div>
       <h2 id="create-department-title">Thêm phòng ban</h2>
       <p>Tạo phòng ban trước khi gán nhân viên vào tổ chức.</p>
-      <form method="post" action="/departments/create">{{ csrf_field() }}<div class="field">
+      <form method="post" action="/departments/create" data-success="Đã thêm phòng ban." data-highlight-field="name">{{ csrf_field() }}<div class="field">
           <label for="name">Tên phòng ban <span class="required">*</span>
           </label>
           <input id="name" name="name" value="{{ entered_name|default('') }}" maxlength="100" required aria-describedby="department-name-hint">

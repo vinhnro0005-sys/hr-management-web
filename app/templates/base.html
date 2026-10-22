@@ -25,6 +25,7 @@
       </button>
     {% endif %}
     <div class="{% if is_login %}login-shell{% else %}workspace{% endif %}">
+      {% if is_login %}<div class="login-glow" aria-hidden="true"></div>{% endif %}
       {% include 'components/header.html' %}
       <main id="main-content" tabindex="-1" class="{% if is_login %}login-main{% else %}page-content{% endif %}">
         {% if not is_login %}
@@ -43,11 +44,10 @@
             </div>
           </div>
         {% endif %}
-        {% include 'components/messages.html' %}
+        {% if not is_login %}{% include 'components/messages.html' %}{% endif %}
         {% block content %}{% endblock %}
       </main>
-      <footer class="page-footer">Hệ thống Quản lý Nhân sự <span>Thông tin rõ ràng · Quản lý thuận tiện</span>
-      </footer>
+      {% if not is_login %}<footer class="page-footer">Hệ thống Quản lý Nhân sự</footer>{% endif %}
     </div>
   </body>
 </html>

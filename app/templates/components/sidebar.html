@@ -6,21 +6,20 @@
     </a>
     <button type="button" class="icon-button sidebar-close" aria-label="Đóng điều hướng" hidden>{{ icon('close') }}</button>
   </div>
-  <p class="nav-label">Không gian làm việc</p>
+  <p class="nav-label">{% if is_admin %}Quản trị{% else %}Cá nhân{% endif %}</p>
   <nav aria-label="Chức năng">
     {% if is_admin %}
-      <a class="nav-item" href="/employees"{% if path.startswith('/employees') %} aria-current="page"{% endif %}>{{ icon('people') }}<span>Nhân viên</span>
+      {% set on_employees = path.startswith('/employees') %}
+      {% set on_departments = path.startswith('/departments') %}
+      <a class="nav-item" href="/employees"{% if on_employees %} aria-current="page"{% endif %}>{% if on_employees %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('people') }}<span>Nhân viên</span>
       </a>
-      <a class="nav-item" href="/departments"{% if path.startswith('/departments') %} aria-current="page"{% endif %}>{{ icon('building') }}<span>Phòng ban</span>
+      <a class="nav-item" href="/departments"{% if on_departments %} aria-current="page"{% endif %}>{% if on_departments %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('building') }}<span>Phòng ban</span>
       </a>
     {% endif %}
-    <a class="nav-item" href="/profile"{% if path == '/profile' %} aria-current="page"{% endif %}>{{ icon('person') }}<span>Hồ sơ cá nhân</span>
+    <a class="nav-item" href="/profile"{% if path == '/profile' %} aria-current="page"{% endif %}>{% if path == '/profile' %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('person') }}<span>Hồ sơ cá nhân</span>
     </a>
   </nav>
   <div class="sidebar-bottom">
-    <p class="sidebar-note">
-      {% if is_admin %}Quản lý hồ sơ và tổ chức<br>tại một nơi.{% else %}Thông tin công việc<br>và hồ sơ của bạn.{% endif %}
-    </p>
     <form method="post" action="/logout">{{ csrf_field() }}<button class="logout-button" type="submit">{{ icon('logout') }} Đăng xuất</button>
     </form>
   </div>

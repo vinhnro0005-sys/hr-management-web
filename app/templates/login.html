@@ -3,11 +3,11 @@
 {% block content %}
   <div class="login-layout">
     <section class="login-story">
-      <p class="eyebrow">Con người làm nên tổ chức</p>
-      <h2>Mỗi hồ sơ,<br>một phần của<br>
-        <span>đội ngũ.</span>
+      <p class="eyebrow">Quản lý nhân sự</p>
+      <h2>Hồ sơ nhân viên<br>và phòng ban,<br>
+        <span>ở cùng một nơi.</span>
       </h2>
-      <p>Quản lý thông tin nhân sự và phòng ban<br>trong một không gian gọn gàng, dễ sử dụng.</p>
+      <p>Tra cứu, cập nhật hồ sơ nhân viên và sắp xếp phòng ban trong tổ chức.</p>
       <div class="login-art" aria-hidden="true">
         <div class="art-line">
         </div>
@@ -19,10 +19,11 @@
     <section class="panel login-card" aria-labelledby="login-title">
       <div class="login-card-heading">
         <span class="section-marker">{{ icon('person') }}</span>
-        <h1 id="login-title">Chào mừng trở lại</h1>
-        <p>Đăng nhập để mở không gian làm việc của bạn.</p>
+        <h1 id="login-title">Đăng nhập</h1>
+        <p>Dùng tài khoản do quản trị viên cấp.</p>
       </div>
-      <form method="post" action="/login">{{ csrf_field() }}<div class="field">
+      {% include 'components/messages.html' %}
+      <form method="post" action="/login" data-loading-text="Đang đăng nhập…">{{ csrf_field() }}<div class="field">
           <label for="username">Tên đăng nhập</label>
           <input id="username" name="username" value="{{ username|default('') }}" autocomplete="username" required autofocus placeholder="Nhập tên đăng nhập">
         </div>
@@ -32,7 +33,6 @@
         </div>
         <button class="button button-primary login-submit" type="submit">Đăng nhập</button>
       </form>
-      <p class="login-help">Sử dụng tài khoản được cấp bởi quản trị viên.</p>
     </section>
   </div>
 {% endblock %}
