@@ -1,5 +1,7 @@
 # Hướng dẫn B chỉnh sửa và tích hợp với phần A
 
+> Cập nhật tích hợp 21/10/2026: B đã có commit bd95a80, đã được lấy về máy A và ghép với refactor. Quyết định mới nhất: giữ nguyên code/import Auth của B; app/models/employee.py và department.py dẫn lại class thật trong app/modules để hai bên dùng cùng một model. main.py giữ cả session/quyền và handler form. Test Auth và Employee trên SQLite RAM đã pass; MySQL local A chưa có bảng users/tài khoản. Bản ghép chưa commit/push. Các phần cấu trúc và yêu cầu chỉnh sửa bên dưới là tài liệu ban đầu; đọc cùng PROJECT_PROGRESS.md để tránh làm ngược quyết định mới nhất.
+
 Ngày chốt: 11/10/2026.
 
 ## 1. Quyết định chung — dùng phần A làm chuẩn
@@ -12,7 +14,7 @@ Tài liệu này chốt hướng tích hợp theo yêu cầu của A và `PLAN_F
 - Employee/Department của B là phần thử nghiệm: thay bằng phần A, nhưng rà soát và chuyển các logic Auth/User đang phụ thuộc vào phần thử nghiệm trước khi bỏ.
 - Không chuyển phần A sang frontend gọi API JSON. Không giữ hai bộ Employee/Department cùng xử lý một chức năng.
 - Không giữ hai cơ chế đăng nhập song song. Chốt đăng nhập web bằng session cookie, trình bày chi tiết ở mục 5.
-- Giữ hai vai trò `admin` và `employee`. Không dùng thêm `owner` hoặc `manager` trong phạm vi hiện tại.
+- Giữ hai vai trò `admin` và `employee_models.py`. Không dùng thêm `owner` hoặc `manager` trong phạm vi hiện tại.
 - Code dễ đọc, tên rõ nghĩa; không viết rút gọn khó hiểu. Theo yêu cầu môn học A đã cung cấp, không thêm `try/except` trong code ứng dụng; dùng kiểm tra điều kiện và kết quả lỗi rõ ràng.
 
 Jinja2 chỉ tạo HTML. Logic kiểm tra mật khẩu, phân quyền và làm việc với database vẫn là Python; không phải chuyển các logic đó thành template.
@@ -127,7 +129,7 @@ Giữ quy tắc xử lý dữ liệu của A, bao gồm chuẩn hóa trường t
 - `id`: Integer, khóa chính.
 - `username`: String(100), bắt buộc, duy nhất.
 - `password_hash`: chuỗi hash mật khẩu; thống nhất tên theo plan, sửa các chỗ B đang dùng `hashed_password`.
-- `role`: chỉ `admin` hoặc `employee`.
+- `role`: chỉ `admin` hoặc `employee_models.py`.
 - `employee_id`: String(20), khóa ngoại employees.id, duy nhất. Cho phép NULL cho tài khoản admin khởi tạo; tài khoản employee phải gắn với nhân viên tồn tại.
 - Có thể giữ `is_active` để khóa tài khoản; phải kiểm tra khi đăng nhập và khi truy cập trang được bảo vệ.
 - Chưa đưa luồng bắt buộc đổi mật khẩu/refresh token vào bản ghép này; loại bỏ các tham chiếu không còn dùng.

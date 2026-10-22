@@ -1,17 +1,5 @@
-from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
-from app.database import Base
+"""Đường dẫn import chung; dùng model Department duy nhất trong module."""
 
-class Department(Base):
-    __tablename__ = "departments"
+from app.modules.department.department_models import Department
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True,
-        autoincrement=True
-    )
-
-    name: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False,
-        unique=True
-    )
+__all__ = ["Department"]

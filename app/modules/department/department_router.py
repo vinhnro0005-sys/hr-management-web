@@ -2,10 +2,16 @@ from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from sqlalchemy import select
-
+from app.modules.department.department_schemas import (
+    DepartmentCreate,
+    DepartmentUpdate,
+)
+from app.modules.department import department_service
 from app.database import SessionLocal
-from app.models.department import Department
+from app.modules.department.department_repository import (
+    get_all_departments,
+    get_department_by_id,
+)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -14,9 +20,7 @@ templates = Jinja2Templates(directory="app/templates")
 @router.get("/departments")
 def get_departments(request: Request):
     with SessionLocal() as db:
-        departments = db.scalars(
-            select(Department).order_by(Department.id)
-        ).all()
+        departments = get_all_departments(db)
         return templates.TemplateResponse(
             request=request,
             name="departments/list.html",
@@ -24,37 +28,21 @@ def get_departments(request: Request):
         )
 
 @router.post("/departments/create")
-def create_department(request: Request, name: str = Form(...)):
-    name = name.strip()
-    error = None
+def create_department(request: Request, data: DepartmentCreate = Form(...)):
     with SessionLocal() as db:
-        if not name:
-            error = "Tên phòng ban không được để trống"
-        elif len(name) > 100:
-            error = "Tên phòng ban tối đa 100 ký tự"
-        else:
-            existing_department = db.scalar(
-                select(Department).where(Department.name == name)
-            )
-            if existing_department is not None:
-                error = "Tên phòng ban đã tồn tại"
-
+        error = department_service.create_department(db, data)
         if error:
-            department = db.scalars(
-                select(Department).order_by(Department.id)
-            ).all()
+            departments = get_all_departments(db)
             return templates.TemplateResponse(
                 request = request,
                 name = "departments/list.html",
                 context = {
-                    "departments": department,
+                    "departments": departments,
                     "error": error,
+                    "entered_name": data.name,
                 },
                 status_code = 400,
             )
-        department = Department(name=name)
-        db.add(department)
-        db.commit()
 
     return RedirectResponse(
         url = "/departments",
@@ -64,7 +52,7 @@ def create_department(request: Request, name: str = Form(...)):
 @router.get("/departments/{department_id}/edit")
 def edit_department_form(request: Request, department_id: int):
     with SessionLocal() as db:
-        department = db.get(Department, department_id)
+        department = get_department_by_id(db, department_id)
         if department is None:
             raise HTTPException(
                 status_code = 404,
@@ -77,38 +65,26 @@ def edit_department_form(request: Request, department_id: int):
         )
 
 @router.post("/departments/{department_id}/edit")
-def update_department(request: Request, department_id: int, name: str = Form(...)):
-    name = name.strip()
-    error = None
+def update_department(request: Request, department_id: int, data: DepartmentUpdate = Form(...)):
     with SessionLocal() as db:
-        department = db.get(Department, department_id)
+        department = get_department_by_id(db, department_id)
         if department is None:
             raise HTTPException(
                 status_code = 404,
-                detail = "Không tìm thấy tài khoản"
+                detail = "Không tìm thấy phong ban"
             )
-        if not name:
-            error = "Tên phòng ban không được để trống"
-        elif len(name) > 100:
-            error = "Tên phòng ban tối đa 100 ksy tự"
-        else:
-            existing_department = db.scalar(
-                select(Department).where(
-                    Department.name == name,
-                    Department.id != department_id
-                )
-            )
-            if existing_department is not None:
-                error = "Tên phòng ban đã tồn tại"
+        error = department_service.update_department(db, department, data)
         if error:
             return templates.TemplateResponse(
                 request = request,
                 name = "departments/edit.html",
-                context = {"department": department, "error": error},
+                context = {
+                    "department": department,
+                    "error": error,
+                    "entered_name": data.name
+                },
                 status_code = 400,
             )
-        department.name = name
-        db.commit()
     return RedirectResponse(
         url="/departments",
         status_code = 303

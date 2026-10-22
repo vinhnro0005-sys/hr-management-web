@@ -1,197 +1,25 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thông tin cá nhân - Quản lý nhân sự</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        body {
-            background-color: #f7fafc;
-            color: #2d3748;
-            padding: 40px 20px;
-        }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-        }
-        .header {
-            background-color: #2b6cb0;
-            color: white;
-            padding: 24px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 {
-            font-size: 22px;
-        }
-        .header .user-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
-        .content {
-            padding: 32px;
-        }
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 16px;
-            border-bottom: 2px solid #edf2f7;
-            padding-bottom: 8px;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 180px 1fr;
-            row-gap: 12px;
-            margin-bottom: 28px;
-            font-size: 15px;
-        }
-        .info-label {
-            color: #718096;
-            font-weight: 500;
-        }
-        .info-value {
-            color: #1a202c;
-            font-weight: 500;
-        }
-        .badge-active {
-            display: inline-block;
-            background-color: #c6f6d5;
-            color: #22543d;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .badge-inactive {
-            display: inline-block;
-            background-color: #fed7d7;
-            color: #742a2a;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            border-top: 1px solid #edf2f7;
-            padding-top: 24px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.2s;
-        }
-        .btn-primary {
-            background-color: #3182ce;
-            color: white;
-        }
-        .btn-primary:hover {
-            background-color: #2b6cb0;
-        }
-        .btn-danger {
-            background-color: #e53e3e;
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: #c53030;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Hồ sơ cá nhân</h1>
-            <div class="user-badge">{{ user.username }} ({{ user.role }})</div>
-        </div>
-
-        <div class="content">
-            {% if employee %}
-            <div class="section-title">Thông tin nhân viên</div>
-            <div class="info-grid">
-                <div class="info-label">Mã nhân viên:</div>
-                <div class="info-value"><strong>{{ employee.id }}</strong></div>
-
-                <div class="info-label">Họ và tên:</div>
-                <div class="info-value">{{ employee.name }}</div>
-
-                <div class="info-label">Phòng ban:</div>
-                <div class="info-value">{{ department.name if department else "Chưa phân phòng" }}</div>
-
-                <div class="info-label">Chức vụ:</div>
-                <div class="info-value">{{ employee.position or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Ngày sinh:</div>
-                <div class="info-value">{{ employee.birthday or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Giới tính:</div>
-                <div class="info-value">{{ employee.gender or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Số điện thoại:</div>
-                <div class="info-value">{{ employee.phone or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Email:</div>
-                <div class="info-value">{{ employee.email or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Địa chỉ:</div>
-                <div class="info-value">{{ employee.address or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Ngày vào làm:</div>
-                <div class="info-value">{{ employee.start_date or "Chưa cập nhật" }}</div>
-
-                <div class="info-label">Trạng thái:</div>
-                <div class="info-value">
-                    {% if employee.status == "Active" %}
-                    <span class="badge-active">Đang hoạt động</span>
-                    {% else %}
-                    <span class="badge-inactive">Ngừng hoạt động</span>
-                    {% endif %}
-                </div>
-            </div>
-            {% else %}
-            <div class="section-title">Tài khoản quản trị viên</div>
-            <div class="info-grid">
-                <div class="info-label">Tên tài khoản:</div>
-                <div class="info-value">{{ user.username }}</div>
-
-                <div class="info-label">Vai trò:</div>
-                <div class="info-value">{{ user.role }}</div>
-            </div>
-            {% endif %}
-
-            <div class="actions">
-                {% if user.role == "admin" %}
-                <a href="/employees" class="btn btn-primary">Quản lý nhân viên</a>
-                <a href="/departments" class="btn btn-primary">Quản lý phòng ban</a>
-                {% endif %}
-
-                <form method="post" action="/logout" style="display: inline;">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <button type="submit" class="btn btn-danger">Đăng xuất</button>
-                </form>
-            </div>
-        </div>
+{% extends 'base.html' %}
+{% set page_title = 'Hồ sơ cá nhân' %}
+{% block eyebrow %}Tài khoản của bạn{% endblock %}
+{% block description %}Xem thông tin hồ sơ và tài khoản đang đăng nhập.{% endblock %}
+{% block content %}
+  {% if employee %}{% include 'employees/info.html' %}{% endif %}
+  <section class="panel account-panel">
+    <div>
+      <p class="eyebrow">Tài khoản</p>
+      <h2>{{ user.username }}</h2>
+      <p>
+        {% if user.role == 'admin' %}Quản trị viên{% elif user.role == 'employee' %}Nhân viên{% else %}{{ user.role }}{% endif %}
+      </p>
+      {% if not employee %}
+        <p class="account-note">Tài khoản chưa liên kết với hồ sơ nhân viên.</p>
+      {% endif %}
     </div>
-</body>
-</html>
+    {% if user.role == 'admin' %}
+      <div class="heading-actions">
+        <a class="button button-primary" href="/employees">Quản lý nhân viên</a>
+        <a class="button" href="/departments">Quản lý phòng ban</a>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

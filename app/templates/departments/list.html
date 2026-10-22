@@ -1,46 +1,58 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý phòng ban</title>
-</head>
-<body>
-    <h1>Danh sách phòng ban</h1>
-    <p>
-        <a href="/employees">Quản lý nhân viên</a> |
-        <a href="/profile">Hồ sơ cá nhân</a> |
-        <a href="/logout">Đăng xuất</a>
-    </p>
-    <form method="post" action="/departments/create">
-        <label for="name">Tên phòng ban:</label>
-        <input
-            id="name"
-            name="name"
-            type="text"
-            maxlength="100"
-            required
-        >
-        <button type="submit">Thêm</button>
-    </form>
-    {% if error %}
-    <p>{{error}}</p>
-    {% endif %}
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Tên phòng ban</th>
-            <th>Thao tác</th>
-        </tr>
-        {% for department in departments %}
-        <tr>
-            <td>{{department.id}}</td>
-            <td>{{department.name}}</td>
-            <td>
-                <a href = "/departments/{{ department.id }}/edit">Sửa</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-
-</body>
-</html>
+{% extends 'base.html' %}
+{% set page_title = 'Danh sách phòng ban' %}
+{% block description %}Quản lý các phòng ban để sắp xếp hồ sơ nhân viên.{% endblock %}
+{% block content %}
+  <div class="department-layout">
+    <section class="panel" aria-label="Các phòng ban">
+      <div class="panel-heading">
+        <div>
+          <h2>Phòng ban trong tổ chức</h2>
+          <p>{{ departments|length }} phòng ban</p>
+        </div>{{ icon('building') }}</div>
+      <div class="table-scroll" role="region" aria-label="Bảng phòng ban" tabindex="0">
+        <table class="department-table">
+          <caption class="sr-only">Danh sách phòng ban</caption>
+          <thead>
+            <tr>
+              <th scope="col">Mã</th>
+              <th scope="col">Tên phòng ban</th>
+              <th scope="col" class="action-cell">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for department in departments %}
+              <tr>
+                <td class="mono">{{ department.id }}</td>
+                <td class="department-name">{{ department.name }}</td>
+                <td class="action-cell">
+                  <a class="button button-small" href="/departments/{{ department.id }}/edit" aria-label="Sửa phòng ban {{ department.name }}">{{ icon('edit') }} Sửa</a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="3">
+                  <div class="empty-state">{{ icon('building') }}<h3>Chưa có phòng ban</h3>
+                    <p>Thêm phòng ban đầu tiên bằng biểu mẫu bên cạnh.</p>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="panel department-create" aria-labelledby="create-department-title">
+      <div class="section-marker">{{ icon('plus') }}</div>
+      <h2 id="create-department-title">Thêm phòng ban</h2>
+      <p>Tạo phòng ban trước khi gán nhân viên vào tổ chức.</p>
+      <form method="post" action="/departments/create">{{ csrf_field() }}<div class="field">
+          <label for="name">Tên phòng ban <span class="required">*</span>
+          </label>
+          <input id="name" name="name" value="{{ entered_name|default('') }}" maxlength="100" required aria-describedby="department-name-hint">
+          <small id="department-name-hint">Tối đa 100 ký tự, không trùng tên đã có.</small>
+        </div>
+        <button class="button button-primary" type="submit">{{ icon('plus') }} Thêm phòng ban</button>
+      </form>
+    </section>
+  </div>
+{% endblock %}

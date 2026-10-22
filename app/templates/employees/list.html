@@ -1,101 +1,103 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý nhân viên</title>
-</head>
-<body>
-    <h1>Danh sách nhân viên</h1>
-    <p>
-        <a href="/employees/create">Thêm nhân viên</a> |
-        <a href="/departments">Quản lý phòng ban</a> |
-        <a href="/profile">Hồ sơ cá nhân</a> |
-        <a href="/logout">Đăng xuất</a>
-    </p>
-    <table border="1">
-        <tr>
-            <th>Mã nhân viên</th>
-            <th>Họ tên</th>
-            <th>Phòng ban</th>
-            <th>Chức vụ</th>
-            <th>Trạng thái</th>
-        </tr>
-        {% for employee, department_name in employees %}
-        <tr>
-            <td>{{ employee.id }}</td>
-            <td>
-                <a href="/employees/{{employee.id}}">
-                    {{employee.name}}
-                </a>
-            </td>
-            <td>{{ department_name }}</td>
-            <td>{{ employee.position or "" }}</td>
-            <td>{{ employee.status }}</td>
-        </tr>
-        {%else%}
-        <tr>
-            <td colspan="5">Khong co nhan vien phu hop</td>
-        </tr>
-        {%endfor%}
-
-        <form method="get" action="/employees">
-            <input
-                name="q"
-                value="{{ q }}"
-                placeholder="Nhập mã hoặc tên nhân viên"
-            >
-
-            <select name="department_id">
-                <option value="">Tất cả phòng ban</option>
-
-                {% for department in departments %}
-                <option
-                    value="{{ department.id }}"
-                    {% if selected_department == department.id|string %}
-                    selected
-                    {% endif %}
-                >
-                    {{ department.name }}
-                </option>
-                {% endfor %}
-            </select>
-
-            <select name="status">
-                <option value="">Tất cả trạng thái</option>
-                <option
-                    value="Active"
-                    {% if selected_status == "Active" %}selected{% endif %}
-                >
-                    Đang hoạt động
-                </option>
-                <option
-                    value="Inactive"
-                    {% if selected_status == "Inactive" %}selected{% endif %}
-                >
-                    Ngừng hoạt động
-                </option>
-            </select>
-
-            <select name="position">
-                <option value="">Tất cả chức vụ</option>
-
-                {% for position_name in positions %}
-                <option
-                    value="{{ position_name }}"
-                    {% if selected_position == position_name %}
-                    selected
-                    {% endif %}
-                >
-                    {{ position_name }}
-                </option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">Tìm / Lọc</button>
-            <a href="/employees">Xóa bộ lọc</a>
-        </form>
-
-    </table>
-
-</body>
-</html>
+{% extends 'base.html' %}
+{% set page_title = 'Danh sách nhân viên' %}
+{% block description %}Tra cứu và quản lý thông tin nhân viên trong tổ chức.{% endblock %}
+{% block actions %}
+  <a class="button button-primary" href="/employees/create">{{ icon('plus') }} Thêm nhân viên</a>
+{% endblock %}
+{% block content %}
+  <section class="panel directory-panel" aria-label="Danh bạ nhân viên">
+    <div class="panel-heading">
+      <div>
+        <h2>Danh bạ nhân viên</h2>
+        <p>{{ employees|length }} kết quả{% if q or selected_department or selected_status or selected_position %} phù hợp với bộ lọc{% endif %}
+        </p>
+      </div>
+      <span class="section-marker" aria-hidden="true">{{ icon('people') }}</span>
+    </div>
+    <form class="filter-form" method="get" action="/employees">
+      <div class="field search-field">
+        <label for="q">Tìm nhân viên</label>
+        <div class="input-icon">{{ icon('search') }}<input id="q" name="q" value="{{ q }}" placeholder="Nhập mã hoặc họ tên">
+        </div>
+      </div>
+      <div class="field">
+        <label for="department_id">Phòng ban</label>
+        <select id="department_id" name="department_id">
+          <option value="">Tất cả phòng ban</option>
+          {% for department in departments %}
+            <option value="{{ department.id }}" {% if selected_department|string == department.id|string %}selected{% endif %}>{{ department.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="position">Chức vụ</label>
+        <select id="position" name="position">
+          <option value="">Tất cả chức vụ</option>
+          {% for position_name in positions %}
+            <option value="{{ position_name }}" {% if selected_position == position_name %}selected{% endif %}>{{ position_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="status">Trạng thái</label>
+        <select id="status" name="status">
+          <option value="">Tất cả trạng thái</option>
+          <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Đang hoạt động</option>
+          <option value="Inactive" {% if selected_status == 'Inactive' %}selected{% endif %}>Ngừng hoạt động</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="button button-primary" type="submit">Tìm / Lọc</button>
+        <a class="text-link" href="/employees">Xóa bộ lọc</a>
+      </div>
+    </form>
+    <p class="table-hint" id="employee-table-hint">Cuộn ngang để xem đầy đủ thông tin và thao tác.</p>
+    <div class="table-scroll" role="region" aria-label="Bảng nhân viên" aria-describedby="employee-table-hint" tabindex="0">
+      <table class="employee-table">
+        <caption class="sr-only">Danh sách nhân viên và các thao tác xem, sửa hồ sơ</caption>
+        <thead>
+          <tr>
+            <th scope="col">Nhân viên</th>
+            <th scope="col">Phòng ban</th>
+            <th scope="col">Chức vụ</th>
+            <th scope="col">Trạng thái</th>
+            <th scope="col" class="action-cell">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for employee, department_name in employees %}
+            <tr>
+              <td>
+                <div class="person-cell">{{ avatar() }}<div>
+                    <a class="person-name" href="/employees/{{ employee.id|urlencode }}">{{ employee.name }}</a>
+                    <span class="employee-code">{{ employee.id }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>{{ department_name }}</td>
+              <td>{{ employee.position or 'Chưa cập nhật' }}</td>
+              <td>{{ status_badge(employee.status) }}</td>
+              <td class="action-cell">
+                <div class="row-actions">
+                  <a class="text-link" href="/employees/{{ employee.id|urlencode }}" aria-label="Xem hồ sơ {{ employee.name }}">Xem</a>
+                  <a class="button button-small" href="/employees/{{ employee.id|urlencode }}/edit" aria-label="Sửa hồ sơ {{ employee.name }}">{{ icon('edit') }} Sửa</a>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">{{ icon('search') }}<h3>Chưa có nhân viên phù hợp</h3>
+                  <p>Thử đổi từ khóa hoặc xóa bộ lọc để xem lại danh sách.</p>
+                  <a class="text-link" href="/employees">Xem tất cả nhân viên</a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">Hiển thị {{ employees|length }} kết quả <span>Chọn tên nhân viên để xem hồ sơ</span>
+    </div>
+  </section>
+{% endblock %}

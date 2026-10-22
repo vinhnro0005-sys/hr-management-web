@@ -1,0 +1,53 @@
+{% from 'components/ui.html' import icon, avatar, status_badge, csrf_field with context %}
+{% set path = request.url.path %}
+{% set is_admin = path.startswith('/employees') or path.startswith('/departments') or (user is defined and user.role == 'admin') %}
+{% set is_login = path == '/login' %}
+<!doctype html>
+<html lang="vi" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>
+      {% block title %}{{ page_title }}{% endblock %} · Hệ thống Quản lý Nhân sự</title>
+    <script src="/static/js/theme.js">
+    </script>
+    <link rel="icon" href="/static/images/avatar-default.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="/static/js/app.js" defer>
+    </script>
+  </head>
+  <body{% if is_login %} class="login-page"{% endif %}>
+    <a class="skip-link" href="#main-content">Đến nội dung chính</a>
+    {% if not is_login %}
+      {% include 'components/sidebar.html' %}
+      <button class="sidebar-backdrop" type="button" aria-label="Đóng điều hướng" tabindex="-1" hidden>
+      </button>
+    {% endif %}
+    <div class="{% if is_login %}login-shell{% else %}workspace{% endif %}">
+      {% include 'components/header.html' %}
+      <main id="main-content" tabindex="-1" class="{% if is_login %}login-main{% else %}page-content{% endif %}">
+        {% if not is_login %}
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow">
+                {% block eyebrow %}Nhân sự &amp; tổ chức{% endblock %}
+              </p>
+              <h1>{{ page_title }}</h1>
+              <p class="page-description">
+                {% block description %}{% endblock %}
+              </p>
+            </div>
+            <div class="heading-actions">
+              {% block actions %}{% endblock %}
+            </div>
+          </div>
+        {% endif %}
+        {% include 'components/messages.html' %}
+        {% block content %}{% endblock %}
+      </main>
+      <footer class="page-footer">Hệ thống Quản lý Nhân sự <span>Thông tin rõ ràng · Quản lý thuận tiện</span>
+      </footer>
+    </div>
+  </body>
+</html>

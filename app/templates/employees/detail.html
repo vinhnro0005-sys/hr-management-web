@@ -1,37 +1,22 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Chi tiết nhân viên</title>
-</head>
-<body>
-    <h1>Hồ sơ nhân viên</h1>
-    <p>
-    <a href="/employees/{{ employee.id }}/edit">Sửa thông tin</a>
-    </p>
-    <p>Mã: {{ employee.id }}</p>
-    <p>Họ tên: {{ employee.name }}</p>
-    <p>Phòng ban: {{ department.name }}</p>
-    <p>Chức vụ: {{ employee.position or "Chưa cập nhật" }}</p>
-    <p>Ngày sinh: {{ employee.birthday or "Chưa cập nhật" }}</p>
-    <p>Giới tính: {{ employee.gender or "Chưa cập nhật" }}</p>
-    <p>Điện thoại: {{ employee.phone or "Chưa cập nhật" }}</p>
-    <p>Email: {{ employee.email or "Chưa cập nhật" }}</p>
-    <p>Địa chỉ: {{ employee.address or "Chưa cập nhật" }}</p>
-    <p>Ngày vào làm: {{ employee.start_date or "Chưa cập nhật" }}</p>
-    <p>Trạng thái: {{ employee.status }}</p>
-
-
-    {% if employee.status=="Active" %}
-    <form
-        method="post"
-        action="/employees/{{employee.id}}/deactivate"
-    >
-        <button type="submit">Ngung hoat dong</button>
-    </form>
-    {%else%}
-    <p>Nhan vien da ngung hoat dong</p>
-    {%endif%}
-    <a href="/employees">Quay lại danh sách</a>
-</body>
-</html>
+{% extends 'base.html' %}
+{% set page_title = 'Hồ sơ nhân viên' %}
+{% block description %}Thông tin cá nhân và công việc của nhân viên.{% endblock %}
+{% block actions %}
+  <a class="button" href="/employees">{{ icon('arrow') }} Danh sách</a>
+  <a class="button button-primary" href="/employees/{{ employee.id|urlencode }}/edit">{{ icon('edit') }} Sửa thông tin</a>
+{% endblock %}
+{% block content %}
+  {% include 'employees/info.html' %}
+  <section class="panel lifecycle-panel" aria-label="Trạng thái nhân viên">
+    <div>
+      <h2>Trạng thái làm việc</h2>
+      <p>
+        {% if employee.status == 'Active' %}Ngừng hoạt động sẽ giữ lại hồ sơ và lịch sử của nhân viên.{% else %}Nhân viên đã ngừng hoạt động. Hồ sơ vẫn được lưu trong hệ thống.{% endif %}
+      </p>
+    </div>
+    {% if employee.status == 'Active' %}
+      <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-confirm="Ngừng hoạt động nhân viên {{ employee.name }} ({{ employee.id }})? Hồ sơ sẽ được giữ lại.">{{ csrf_field() }}<button type="submit" class="button button-danger">Ngừng hoạt động</button>
+      </form>
+    {% endif %}
+  </section>
+{% endblock %}
