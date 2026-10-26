@@ -9,6 +9,9 @@
   <p class="nav-label">{% if is_admin %}Quản trị{% else %}Cá nhân{% endif %}</p>
   <nav aria-label="Chức năng">
     {% if is_admin %}
+      {% set on_dashboard = path == '/dashboard' %}
+      <a class="nav-item" href="/dashboard"{% if on_dashboard %} aria-current="page"{% endif %}>{% if on_dashboard %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('building') }}<span>Tổng quan</span>
+      </a>
       {% set on_employees = path.startswith('/employees') %}
       {% set on_departments = path.startswith('/departments') %}
       <a class="nav-item" href="/employees"{% if on_employees %} aria-current="page"{% endif %}>{% if on_employees %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('people') }}<span>Nhân viên</span>

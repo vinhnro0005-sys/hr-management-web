@@ -23,6 +23,8 @@ from app.modules.department.department_router import router as department_router
 from app.modules.employee.employee_repository import get_employee_by_id
 from app.modules.employee.employee_router import router as employee_router
 
+from app.modules.dashboard.dashboard_router import router as dashboard_router
+
 app = FastAPI(title="HR Management System")
 
 app.add_middleware(
@@ -38,6 +40,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(department_router, dependencies=[Depends(require_admin)])
 app.include_router(employee_router, dependencies=[Depends(require_admin)])
+app.include_router(dashboard_router)
 
 templates = Jinja2Templates(directory="app/templates")
 @app.exception_handler(RequestValidationError)
@@ -164,7 +167,7 @@ def home(request: Request):
     user = get_optional_current_user(request)
     if user is not None:
         if user.role == "admin":
-            return RedirectResponse(url="/employees", status_code=303)
+            return RedirectResponse(url="/dashboard", status_code=303)
         return RedirectResponse(url="/profile", status_code=303)
     return RedirectResponse(url="/login", status_code=303)
 

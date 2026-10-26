@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% set page_title = 'Tổng quan nhân sự' %}
+
+{% block description %}
+Thống kê từ dữ liệu nhân viên và phòng ban hiện tại.
+{% endblock %}
+
+{% block content %}
+<div class="form-grid">
+    <section class="panel">
+        <h2>Tổng nhân viên</h2>
+        <p><strong>{{ total_employees }}</strong></p>
+        <a class="text-link" href="/employees">
+            Xem danh sách
+        </a>
+    </section>
+
+    <section class="panel">
+        <h2>Đang hoạt động</h2>
+        <p><strong>{{ active_employees }}</strong></p>
+        <a class="text-link" href="/employees?status=Active">
+            Xem nhân viên đang hoạt động
+        </a>
+    </section>
+
+    <section class="panel">
+        <h2>Ngừng hoạt động</h2>
+        <p><strong>{{ inactive_employees }}</strong></p>
+        <a class="text-link" href="/employees?status=Inactive">
+            Xem nhân viên ngừng hoạt động
+        </a>
+    </section>
+
+    <section class="panel">
+        <h2>Phòng ban</h2>
+        <p><strong>{{ total_departments }}</strong></p>
+        <a class="text-link" href="/departments">
+            Xem phòng ban
+        </a>
+    </section>
+</div>
+{% endblock %}

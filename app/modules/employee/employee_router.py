@@ -77,11 +77,10 @@ def create_employee(
 ):
 
     with SessionLocal() as db:
-        error = employee_service.create_employee(db, data)
+        credentials, error = employee_service.create_employee(db, data)
 
         if error is not None:
             form_data = prepare_form_data(data)
-
             departments = get_all_departments(db)
             return templates.TemplateResponse(
                 request=request,
@@ -94,9 +93,14 @@ def create_employee(
                 status_code=400
             )
 
-    return RedirectResponse(
-        url = "/employees",
-        status_code = 303
+    return templates.TemplateResponse(
+        request=request,
+        name="employees/created.html",
+        context={
+            "employee_id": data.id,
+            "credentials": credentials,
+        },
+        headers={"Cache-Control": "no-store"},
     )
 
 

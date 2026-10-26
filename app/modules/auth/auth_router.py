@@ -18,7 +18,7 @@ templates = Jinja2Templates(directory="app/templates")
 # ---------------------------------------------------------------------------
 ADMIN_ROLE = "admin"
 LOGIN_URL = "/login"
-ADMIN_HOME_URL = "/employees"
+ADMIN_HOME_URL = "/dashboard"
 USER_HOME_URL = "/profile"
 
 

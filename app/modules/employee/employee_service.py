@@ -23,6 +23,12 @@ from app.modules.employee.employee_repository import (
     update_employee_fields,
 )
 
+import secrets
+from app.models.user import User
+from app.modules.auth.auth_service import AuthService
+from app.modules.auth.security import hash_password
+
+
 
 
 def get_employee_list_data(
@@ -82,16 +88,25 @@ def create_employee(db: Session, data: EmployeeCreate):
     existing_employee = get_employee_by_id(db, data.id)
 
     if existing_employee is not None:
-        return "ma nhan vien da ton tai"
+        return None, "ma nhan vien da ton tai"
 
     department = get_department_by_id(db, data.department_id)
 
     if department is None:
-        return "phong ban ko ton tai"
+        return None, "phong ban ko ton tai"
     if data.email is not None:
         existing_employee = get_employee_by_email(db, data.email)
         if existing_employee is not None:
-            return "email da dc su dung"
+            return None, "email da dc su dung"
+
+    username = data.id
+
+    existing_user = AuthService.get_user_by_username(db, username)
+    if existing_user is not None:
+        return None, "ma nhan vien nay trung ten tai khoan da co"
+
+    initial_password = secrets.token_urlsafe(12)
+    password_hash = hash_password(initial_password)
 
     employee = Employee(
         id=data.id,
@@ -107,8 +122,25 @@ def create_employee(db: Session, data: EmployeeCreate):
         status="Active",
     )
     add_employee(db, employee)
+    db.flush()
+
+    user = User(
+        username=username,
+        password_hash=password_hash,
+        role="employee",
+        employee_id=employee.id,
+        is_active=True,
+    )
+
+    db.add(user)
+
     db.commit()
-    return None
+
+    credentials = {
+        "username": username,
+        "initial_password": initial_password
+    }
+    return credentials, None
 
 def get_employee_detail_data(db: Session, employee_id: str):
     employee = get_employee_by_id(db, employee_id)

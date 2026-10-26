@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% set page_title = 'Đã tạo nhân viên' %}
+
+{% block description %}
+Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
+{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <h2>Thông tin bàn giao tài khoản</h2>
+
+    <dl>
+        <dt>Tên đăng nhập</dt>
+        <dd><code>{{ credentials.username }}</code></dd>
+
+        <dt>Mật khẩu ban đầu</dt>
+        <dd><code>{{ credentials.initial_password }}</code></dd>
+    </dl>
+
+    <p>
+        Hãy bàn giao thông tin này cho đúng nhân viên.
+        Mật khẩu không được lưu dạng đọc lại trong hệ thống.
+    </p>
+
+    <div class="form-actions">
+        <a class="button" href="/employees/{{ employee_id }}">
+            Xem hồ sơ
+        </a>
+
+        <a class="button button-primary" href="/employees">
+            Về danh sách
+        </a>
+    </div>
+</section>
+{% endblock %}

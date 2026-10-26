@@ -1,0 +1,24 @@
+from sqlalchemy import select, func, case
+from sqlalchemy.orm import Session
+
+from app.modules.employee.employee_models import Employee
+from app.modules.department.department_models import Department
+
+def get_employee_totals(db: Session):
+    statement = select(
+        func.count(Employee.id),
+        func.count(
+            case((Employee.status=="Active", 1))
+        ),
+        func.count(
+            case((Employee.status=="Inactive", 1))
+        ),
+    )
+    result = db.execute(statement).one()
+
+    return result
+
+def count_departments(db: Session):
+    statement = select(func.count(Department.id))
+
+    return db.scalar(statement)
