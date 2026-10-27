@@ -358,6 +358,7 @@ html[data-theme="dark"] .avatar-tone-5 { --av-bg: #1f3519; --av-ink: #b9e6a3; }
 .message { border: 1px solid var(--danger); border-left-width: 4px; padding: 14px 18px; border-radius: 10px; display: flex; gap: 12px; margin-bottom: 20px; overflow-wrap: anywhere; }
 .message:focus { outline: none; box-shadow: 0 0 0 4px var(--danger-ring); }
 .message-error { color: var(--danger); background: var(--danger-soft); }
+.message-success { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 .message .icon { flex-shrink: 0; margin-top: 2px; }
 .message p { margin-top: 2px; color: var(--text); }
 .toast-region { position: fixed; z-index: 60; right: 24px; bottom: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }

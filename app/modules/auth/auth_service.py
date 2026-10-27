@@ -120,3 +120,44 @@ class AuthService:
         db.commit()
         db.refresh(user)
         return user, None
+
+    # ------------------------------------------------------------------
+    # Đổi mật khẩu
+    # ------------------------------------------------------------------
+    @staticmethod
+    def change_password(
+        db: Session,
+        user: User,
+        current_password: str,
+        new_password: str,
+        confirm_password: str,
+    ) -> str | None:
+        """Đổi mật khẩu cho user.
+
+        Trả về None nếu thành công, trả về chuỗi lỗi nếu thất bại.
+        """
+        # 0. Quản trị viên không được đổi mật khẩu của chính mình
+        if user.role == ROLE_ADMIN:
+            return "Quản trị viên không có quyền thay đổi mật khẩu của chính bản thân"
+
+        # 1. Xác thực mật khẩu hiện tại
+        if not verify_password(current_password, user.password_hash):
+            return "Mật khẩu hiện tại không chính xác"
+
+        # 2. Kiểm tra mật khẩu mới
+        new_password = new_password or ""
+        if len(new_password) < 8:
+            return "Mật khẩu mới phải có ít nhất 8 ký tự"
+
+        # 3. Kiểm tra xác nhận mật khẩu
+        if new_password != confirm_password:
+            return "Xác nhận mật khẩu không khớp"
+
+        # 4. Không cho phép đặt lại mật khẩu giống cũ
+        if verify_password(new_password, user.password_hash):
+            return "Mật khẩu mới không được trùng với mật khẩu hiện tại"
+
+        # 5. Cập nhật hash mới vào DB
+        user.password_hash = hash_password(new_password)
+        db.commit()
+        return None

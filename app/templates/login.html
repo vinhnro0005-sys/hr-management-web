@@ -49,6 +49,15 @@
         <h1 id="login-title">Đăng nhập</h1>
         <p>Dùng tài khoản do quản trị viên cấp.</p>
       </div>
+      {% if request.query_params.get('changed') == '1' %}
+        <div class="message message-success" role="status" tabindex="-1">
+          {{ icon('check') }}
+          <div>
+            <strong>Đổi mật khẩu thành công</strong>
+            <p>Vui lòng đăng nhập lại với mật khẩu mới của bạn.</p>
+          </div>
+        </div>
+      {% endif %}
       {% include 'components/messages.html' %}
       <form method="post" action="/login" data-loading-text="Đang đăng nhập…">{{ csrf_field() }}<div class="field">
           <label for="username">Tên đăng nhập</label>

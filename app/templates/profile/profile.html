@@ -1,27 +1,35 @@
 {% extends 'base.html' %}
 {% set page_title = 'Hồ sơ cá nhân' %}
 {% block description %}Xem thông tin hồ sơ và tài khoản đang đăng nhập.{% endblock %}
+{% block actions %}
+  {% if employee %}
+    <a class="button button-primary" href="/profile/edit">{{ icon('edit') }} Chỉnh sửa thông tin</a>
+  {% endif %}
+  {% if user and user.role|lower == 'employee' and not is_admin %}
+    <a class="button" href="/profile/change-password">{{ icon('lock') }} Đổi mật khẩu</a>
+  {% endif %}
+{% endblock %}
 {% block content %}
-  {% if employee %}{% include 'employees/info.html' %}{% endif %}
-  <section class="panel account-panel" aria-label="Tài khoản đăng nhập">
-    <div class="account-identity">
-      <span class="section-marker" aria-hidden="true">{{ icon('key') }}</span>
-      <div>
-        <p class="eyebrow">Tài khoản đăng nhập</p>
-        <h2>{{ user.username }}</h2>
-        <p>
-          Vai trò: {% if user.role == 'admin' %}Quản trị viên{% elif user.role == 'employee' %}Nhân viên{% else %}{{ user.role }}{% endif %}
-        </p>
-        {% if not employee %}
-          <p class="account-note">Tài khoản chưa liên kết với hồ sơ nhân viên.</p>
-        {% endif %}
-      </div>
+{% if employee %}{% include 'employees/info.html' %}{% endif %}
+<section class="panel account-panel" aria-label="Tài khoản đăng nhập">
+  <div class="account-identity">
+    <span class="section-marker" aria-hidden="true">{{ icon('key') }}</span>
+    <div>
+      <p class="eyebrow">Tài khoản đăng nhập</p>
+      <h2>{{ user.username }}</h2>
+      <p>
+        Vai trò: {% if user.role == 'admin' %}Quản trị viên{% elif user.role == 'employee' %}Nhân viên{% else %}{{ user.role }}{% endif %}
+      </p>
+      {% if not employee %}
+      <p class="account-note">Tài khoản chưa liên kết với hồ sơ nhân viên.</p>
+      {% endif %}
     </div>
-    {% if user.role == 'admin' %}
-      <div class="heading-actions">
-        <a class="button button-primary" href="/employees">{{ icon('people') }} Quản lý nhân viên</a>
-        <a class="button" href="/departments">{{ icon('building') }} Quản lý phòng ban</a>
-      </div>
-    {% endif %}
-  </section>
+  </div>
+  {% if user.role == 'admin' %}
+  <div class="heading-actions">
+    <a class="button button-primary" href="/employees">{{ icon('people') }} Quản lý nhân viên</a>
+    <a class="button" href="/departments">{{ icon('building') }} Quản lý phòng ban</a>
+  </div>
+  {% endif %}
+</section>
 {% endblock %}

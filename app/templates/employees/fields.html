@@ -60,7 +60,7 @@
     <div class="field">
       <label for="department_id">Phòng ban <span class="required">*</span>
       </label>
-      <select id="department_id" name="department_id" required{{ field_aria('department_id') }}>
+      <select id="department_id" name="department_id" {% if profile_mode %}disabled{% else %}required{% endif %}{{ field_aria('department_id') }}>
         <option value="">Chọn phòng ban</option>
         {% for department in departments %}
           <option value="{{ department.id }}" {% if form_data.get('department_id', '')|string == department.id|string %}selected{% endif %}>{{ department.name }}</option>
@@ -73,12 +73,12 @@
     </div>
     <div class="field">
       <label for="position">Chức vụ</label>
-      <input id="position" name="position" value="{{ form_data.get('position', '') }}" maxlength="100" autocomplete="organization-title"{{ field_aria('position') }}>
+      <input id="position" {% if not profile_mode %}name="position"{% endif %} value="{{ form_data.get('position', '') }}" maxlength="100" autocomplete="organization-title"{% if profile_mode %} readonly{% endif %}{{ field_aria('position') }}>
       {{ field_error('position') }}
     </div>
     <div class="field">
       <label for="start_date">Ngày vào làm</label>
-      <input id="start_date" name="start_date" type="date" value="{{ form_data.get('start_date', '') }}"{{ field_aria('start_date') }}>
+      <input id="start_date" {% if not profile_mode %}name="start_date" {% endif %}type="date"{% if profile_mode %} readonly{% endif %} value="{{ form_data.get('start_date', '') }}"{{ field_aria('start_date') }}>
       {{ field_error('start_date') }}
     </div>
   </div>
