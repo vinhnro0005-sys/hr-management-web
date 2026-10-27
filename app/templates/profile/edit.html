@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% set page_title = 'Chỉnh sửa thông tin cá nhân' %}
+{% block eyebrow %}Tài khoản của bạn{% endblock %}
+{% block description %}Cập nhật thông tin hồ sơ của bạn. Mã nhân viên được giữ nguyên.{% endblock %}
+{% block actions %}
+  <a class="text-link" href="/profile">{{ icon('arrow') }} Quay lại hồ sơ</a>
+{% endblock %}
+{% block content %}
+  {% if error %}
+    <div class="message message-error" role="alert" tabindex="-1">
+      {{ icon('alert') }}
+      <div>
+        <strong>Vui lòng kiểm tra lại</strong>
+        <p>{{ error }}</p>
+      </div>
+    </div>
+  {% endif %}
+  <form class="panel employee-form" method="post" action="/profile/edit" data-success="Đã lưu thay đổi hồ sơ.">
+    {{ csrf_field() }}
+    {% include 'employees/fields.html' %}
+    <div class="form-actions">
+      <a class="button" href="/profile">Hủy</a>
+      <button class="button button-primary" type="submit">{{ icon('check') }} Lưu thay đổi</button>
+    </div>
+  </form>
+{% endblock %}

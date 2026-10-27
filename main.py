@@ -48,7 +48,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     route = request.scope.get("route")
     route_name = getattr(route, "name", None)
 
-    if request.method == "POST" and route_name in ("create_employee", "update_employee"):
+    if request.method == "POST" and route_name in ("create_employee", "update_employee", "update_profile"):
         field_names = {
             "id": "ma nhan vien",
             "name": "Họ tên",
@@ -93,6 +93,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             }
             if route_name == "create_employee":
                 template_name = "employees/form.html"
+            elif route_name == "update_profile":
+                user = get_optional_current_user(request)
+                if user and user.employee_id:
+                    employee = get_employee_by_id(db, user.employee_id)
+                    context["employee"] = employee
+                    context["user"] = user
+                template_name = "profile/edit.html"
             else:
                 employee_id = request.path_params["employee_id"]
                 employee = get_employee_by_id(db, employee_id)
