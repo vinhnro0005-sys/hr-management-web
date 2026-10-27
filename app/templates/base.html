@@ -1,4 +1,4 @@
-{% from 'components/ui.html' import icon, avatar, status_badge, csrf_field with context %}
+{% from 'components/ui.html' import icon, avatar, empty_art, status_badge, csrf_field, list_query, field_error, field_aria with context %}
 {% set path = request.url.path %}
 {% set is_admin = path.startswith('/employees') or path.startswith('/departments') or (user is defined and user.role == 'admin') %}
 {% set is_login = path == '/login' %}
@@ -14,6 +14,11 @@
     </script>
     <link rel="icon" href="/static/images/avatar-default.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/static/css/style.css">
+    {% if is_login or no_snapshot is defined %}
+      {# Passwords and hand-off credentials never enter a view-transition snapshot. #}
+      <meta name="hr-no-snapshot" content="true">
+      <style>@view-transition { navigation: none; }</style>
+    {% endif %}
     <script src="/static/js/app.js" defer>
     </script>
   </head>
@@ -29,15 +34,40 @@
       {% include 'components/header.html' %}
       <main id="main-content" tabindex="-1" class="{% if is_login %}login-main{% else %}page-content{% endif %}">
         {% if not is_login %}
+          {# Breadcrumb and page icon come from the URL, so every page gets real location context without its own markup. #}
+          {% set parts = path.strip('/').split('/') %}
+          {% set section = parts[0] %}
+          {% set back = list_query() %}
+          {% if section == 'employees' and parts|length == 1 %}{% set crumbs = [('Quản trị', '/dashboard'), ('Nhân viên', none)] %}
+          {% elif section == 'employees' and parts[1] == 'create' %}{% set crumbs = [('Nhân viên', '/employees'), ('Thêm mới', none)] %}
+          {% elif section == 'employees' and parts|length == 2 %}{% set crumbs = [('Nhân viên', '/employees' ~ back), (parts[1], none)] %}
+          {% elif section == 'employees' %}{% set crumbs = [('Nhân viên', '/employees' ~ back), (parts[1], '/employees/' ~ parts[1] ~ back), ('Sửa', none)] %}
+          {% elif section == 'departments' and parts|length == 1 %}{% set crumbs = [('Quản trị', '/dashboard'), ('Phòng ban', none)] %}
+          {% elif section == 'departments' %}{% set crumbs = [('Phòng ban', '/departments'), ('Sửa', none)] %}
+          {% elif section == 'dashboard' %}{% set crumbs = [('Quản trị', none), ('Tổng quan', none)] %}
+          {% elif section == 'profile' %}{% set crumbs = [('Tài khoản', none), ('Hồ sơ cá nhân', none)] %}
+          {% else %}{% set crumbs = [] %}{% endif %}
+          {% set page_icon = {'employees': 'people', 'departments': 'building', 'dashboard': 'dashboard', 'profile': 'person'}.get(section, 'alert') %}
           <div class="page-heading">
-            <div>
-              <p class="eyebrow">
-                {% block eyebrow %}Nhân sự &amp; tổ chức{% endblock %}
-              </p>
-              <h1>{{ page_title }}</h1>
-              <p class="page-description">
-                {% block description %}{% endblock %}
-              </p>
+            <div class="page-title">
+              <span class="page-icon" aria-hidden="true">{{ icon(page_icon) }}</span>
+              <div>
+                {% block eyebrow %}
+                  {% if crumbs %}
+                    <nav class="breadcrumb" aria-label="Vị trí trang">
+                      <ol>
+                        {% for label, href in crumbs %}
+                          <li>{% if href %}<a href="{{ href }}">{{ label }}</a>{% else %}<span{% if loop.last %} aria-current="page"{% endif %}>{{ label }}</span>{% endif %}</li>
+                        {% endfor %}
+                      </ol>
+                    </nav>
+                  {% endif %}
+                {% endblock %}
+                <h1>{{ page_title }}</h1>
+                <p class="page-description">
+                  {% block description %}{% endblock %}
+                </p>
+              </div>
             </div>
             <div class="heading-actions">
               {% block actions %}{% endblock %}

@@ -15,17 +15,77 @@
 {% elif name == 'close' %}<path d="m6 6 12 12M6 18 18 6"/>
 {% elif name == 'search' %}<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>
 {% elif name == 'alert' %}<path d="m12 3 10 18H2ZM12 9v4m0 4h.01"/>
+{% elif name == 'chevron' %}<path d="m9 6 6 6-6 6"/>
+{% elif name == 'dashboard' %}<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>
 {% elif name == 'key' %}<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-4 4 3 3"/>
 {% endif %}</svg>
 {%- endif %}
 {%- endmacro %}
 
-{% macro avatar(large=false) -%}
-<img class="avatar{% if large %} avatar-large{% endif %}" src="/static/images/avatar-default.svg" alt="" width="{% if large %}80{% else %}40{% endif %}" height="{% if large %}80{% else %}40{% endif %}">
+{# Initials of the first and last word of the name, on one of six tones picked from the employee code,
+   so a person keeps the same colour everywhere even if their name is edited. The name is always shown beside it. #}
+{% macro avatar(employee, large=false) -%}
+{%- set words = (employee.name or '').split() -%}
+{%- set initials = ((words[0][0] if words else '') ~ (words[-1][0] if words|length > 1 else ''))|upper -%}
+{%- set ns = namespace(sum=0) -%}
+{%- for char in (employee.id or '')|string|upper %}{% set ns.sum = ns.sum + '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.find(char) + 1 %}{% endfor -%}
+<span class="avatar avatar-tone-{{ ns.sum % 6 }}{% if large %} avatar-large{% endif %}" aria-hidden="true">{{ initials or '?' }}</span>
+{%- endmacro %}
+
+{# Small illustrations for empty states. Colours come from theme tokens, so they follow Light/Dark. #}
+{% macro empty_art(kind) -%}
+<svg class="empty-art" width="168" height="112" viewBox="0 0 168 112" fill="none" aria-hidden="true">
+  <rect class="ea-shadow" x="30" y="20" width="108" height="84" rx="12"/>
+  <rect class="ea-card" x="24" y="12" width="108" height="84" rx="12"/>
+  {% if kind == 'building' %}
+    <rect class="ea-block" x="44" y="30" width="30" height="48" rx="5"/>
+    <rect class="ea-block-alt" x="82" y="44" width="30" height="34" rx="5"/>
+    <path class="ea-ink" d="M52 40h4m6 0h4M52 50h4m6 0h4M52 60h4m6 0h4M90 54h4m6 0h4M90 64h4m6 0h4"/>
+    <path class="ea-line" d="M38 84h80"/>
+  {% else %}
+    {% for y in [30, 52, 74] %}
+      <circle class="{% if loop.index == 3 and kind == 'people' %}ea-slot{% else %}ea-dot{% endif %}" cx="44" cy="{{ y }}" r="8"/>
+      <rect class="{% if loop.index == 3 and kind == 'people' %}ea-slot{% else %}ea-bar{% endif %}" x="58" y="{{ y - 6 }}" width="{{ [52, 40, 46][loop.index0] }}" height="5" rx="2.5"/>
+      <rect class="ea-bar-soft" x="58" y="{{ y + 2 }}" width="{{ [32, 26, 30][loop.index0] }}" height="4" rx="2"/>
+    {% endfor %}
+  {% endif %}
+  {% if kind == 'search' %}
+    <circle class="ea-lens" cx="122" cy="76" r="17"/>
+    <path class="ea-handle" d="m134 88 12 12"/>
+    <path class="ea-ink" d="M116 76h12"/>
+  {% else %}
+    <circle class="ea-badge" cx="132" cy="90" r="14"/>
+    <path class="ea-badge-ink" d="M132 84v12M126 90h12"/>
+  {% endif %}
+</svg>
+{%- endmacro %}
+
+{# Server-side error for one field (B01). Renders nothing until the backend passes `field_errors`. #}
+{% macro field_error(name) -%}
+{%- set message = field_errors.get(name) if field_errors is defined and field_errors else '' -%}
+{%- if message %}<small class="field-error" id="{{ name }}-error">{{ icon('alert') }}<span>{{ message }}</span></small>{% endif -%}
+{%- endmacro %}
+
+{# aria attributes for a field: its hint (if any) plus its server error (if any). #}
+{% macro field_aria(name, hint='') -%}
+{%- set invalid = field_errors is defined and field_errors and field_errors.get(name) -%}
+{%- set ids = ([hint] if hint else []) + ([name ~ '-error'] if invalid else []) -%}
+{%- if invalid %} aria-invalid="true"{% endif %}{% if ids %} aria-describedby="{{ ids|join(' ') }}"{% endif -%}
 {%- endmacro %}
 
 {% macro status_badge(status) -%}
 <span class="status {% if status == 'Active' %}status-active{% else %}status-inactive{% endif %}"><span aria-hidden="true"></span>{% if status == 'Active' %}Đang hoạt động{% elif status == 'Inactive' %}Ngừng hoạt động{% else %}{{ status or 'Chưa cập nhật' }}{% endif %}</span>
+{%- endmacro %}
+
+{# The employee-list filters of the current URL, as "?q=…" (empty when none). Only the four list filters
+   are carried, always back to /employees on this site, so links keep the user's list context. #}
+{% macro list_query() -%}
+{%- set params = {} -%}
+{%- for key in ['q', 'department_id', 'position', 'status'] -%}
+  {%- set value = request.query_params.get(key, '')|trim -%}
+  {%- if value %}{% set _ = params.update({key: value}) %}{% endif -%}
+{%- endfor -%}
+{%- if params %}?{{ params|urlencode }}{% endif -%}
 {%- endmacro %}
 
 {% macro csrf_field() -%}

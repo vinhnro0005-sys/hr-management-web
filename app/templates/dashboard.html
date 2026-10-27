@@ -1,42 +1,109 @@
 {% extends 'base.html' %}
 {% set page_title = 'Tổng quan nhân sự' %}
-
-{% block description %}
-Thống kê từ dữ liệu nhân viên và phòng ban hiện tại.
+{% block description %}Số liệu lấy trực tiếp từ hồ sơ nhân viên và phòng ban hiện có.<span data-today hidden></span>{% endblock %}
+{% block actions %}
+  <a class="button" href="/departments">{{ icon('building') }} Quản lý phòng ban</a>
+  <a class="button button-primary" href="/employees/create">{{ icon('plus') }} Thêm nhân viên</a>
 {% endblock %}
-
 {% block content %}
-<div class="form-grid">
-    <section class="panel">
-        <h2>Tổng nhân viên</h2>
-        <p><strong>{{ total_employees }}</strong></p>
-        <a class="text-link" href="/employees">
-            Xem danh sách
+  {% set total = total_employees or 0 %}
+  {% set other_status = total - active_employees - inactive_employees %}
+  {# Every share uses the same denominator (all employee records, any status) for both its bar and its label. #}
+  {% macro percent(part) -%}
+    {%- if not total or not part %}0%{% elif part * 100 < total %}&lt;1%{% else %}{{ (part * 100 / total)|round|int }}%{% endif -%}
+  {%- endmacro %}
+  {% macro share(part) -%}{{ '%.3f'|format(part * 100 / total if total else 0) }}{%- endmacro %}
+
+  <div class="dashboard">
+    <section class="dash-band" aria-label="Số liệu chính">
+      <div class="kpi-grid">
+        <a class="kpi" href="/employees">
+          <span class="kpi-label">Tổng nhân viên {{ icon('chevron') }}</span>
+          <strong class="kpi-value">{{ total }}</strong>
+          <span class="kpi-note">Tất cả hồ sơ, mọi trạng thái</span>
         </a>
+        <a class="kpi" href="/employees?status=Active">
+          <span class="kpi-label"><span class="legend-dot dot-active" aria-hidden="true"></span>Đang hoạt động {{ icon('chevron') }}</span>
+          <strong class="kpi-value">{{ active_employees }}</strong>
+          <span class="kpi-note">{{ percent(active_employees) }} tổng hồ sơ</span>
+        </a>
+        <a class="kpi" href="/employees?status=Inactive">
+          <span class="kpi-label"><span class="legend-dot dot-inactive" aria-hidden="true"></span>Ngừng hoạt động {{ icon('chevron') }}</span>
+          <strong class="kpi-value">{{ inactive_employees }}</strong>
+          <span class="kpi-note">{{ percent(inactive_employees) }} tổng hồ sơ</span>
+        </a>
+        <a class="kpi" href="/departments">
+          <span class="kpi-label">Phòng ban {{ icon('chevron') }}</span>
+          <strong class="kpi-value">{{ total_departments }}</strong>
+          <span class="kpi-note">Kể cả phòng chưa có nhân viên</span>
+        </a>
+      </div>
+      {% if total %}
+        <div class="status-strip">
+          <span class="status-strip-label" id="status-strip-label">Cơ cấu trạng thái</span>
+          <div class="status-bar" role="img" aria-labelledby="status-strip-label" aria-describedby="status-strip-legend">
+            {% if active_employees %}<span class="segment-active" style="--w: {{ share(active_employees) }}"></span>{% endif %}
+            {% if inactive_employees %}<span class="segment-inactive" style="--w: {{ share(inactive_employees) }}"></span>{% endif %}
+            {% if other_status > 0 %}<span class="segment-other" style="--w: {{ share(other_status) }}"></span>{% endif %}
+          </div>
+          <ul class="status-legend" id="status-strip-legend">
+            <li><span class="legend-dot dot-active" aria-hidden="true"></span>Đang hoạt động {{ percent(active_employees) }}</li>
+            <li><span class="legend-dot dot-inactive" aria-hidden="true"></span>Ngừng hoạt động {{ percent(inactive_employees) }}</li>
+            {% if other_status > 0 %}<li><span class="legend-dot dot-other" aria-hidden="true"></span>Trạng thái khác {{ other_status }} · {{ percent(other_status) }}</li>{% endif %}
+          </ul>
+        </div>
+      {% endif %}
     </section>
 
-    <section class="panel">
-        <h2>Đang hoạt động</h2>
-        <p><strong>{{ active_employees }}</strong></p>
-        <a class="text-link" href="/employees?status=Active">
-            Xem nhân viên đang hoạt động
-        </a>
+    <section class="panel department-stats" aria-labelledby="department-statistics-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="department-statistics-title">Nhân viên theo phòng ban</h2>
+          <p id="department-statistics-description">Tính cả đang hoạt động và ngừng hoạt động · tỷ trọng trên tổng {{ total }} hồ sơ</p>
+        </div>
+      </div>
+      {% if department_statistics %}
+        <div class="table-scroll" role="region" aria-labelledby="department-statistics-title" aria-describedby="department-statistics-description" tabindex="0">
+          <table class="stats-table">
+            <caption class="sr-only">Số nhân viên và tỷ trọng của từng phòng ban, sắp xếp từ nhiều đến ít</caption>
+            <thead>
+              <tr>
+                <th scope="col">Phòng ban</th>
+                <th scope="col" class="number-cell">Tổng nhân viên</th>
+                <th scope="col" class="share-cell">Tỷ trọng</th>
+                <th scope="col" class="action-cell"><span class="sr-only">Thao tác</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {# Python's sort is stable, so ties keep the repository's name order. #}
+              {% for row in department_statistics|sort(attribute='employee_count', reverse=true) %}
+                <tr>
+                  <th scope="row">{{ row.name }}</th>
+                  <td class="number-cell">{{ row.employee_count }}</td>
+                  <td class="share-cell">
+                    <span class="share">
+                      <span class="share-track" aria-hidden="true"><span class="share-fill" style="--w: {{ share(row.employee_count) }}"></span></span>
+                      <span class="share-value">{{ percent(row.employee_count) }}</span>
+                    </span>
+                  </td>
+                  <td class="action-cell"><a class="text-link" href="/employees?department_id={{ row.id }}" aria-label="Xem nhân viên phòng {{ row.name }}">Xem nhân viên {{ icon('chevron') }}</a></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% set department_sum = department_statistics|sum(attribute='employee_count') %}
+        <div class="table-footer">
+          <span>Cộng theo phòng ban: {{ department_sum }} / {{ total }} hồ sơ</span>
+          {% if department_sum != total %}<span class="footer-warning">{{ total - department_sum }} hồ sơ không khớp phòng ban nào</span>{% endif %}
+          {% if not total %}<a class="text-link" href="/employees/create">{{ icon('plus') }} Thêm nhân viên đầu tiên</a>{% endif %}
+        </div>
+      {% else %}
+        <div class="empty-state">{{ empty_art('building') }}<h3>Chưa có phòng ban</h3>
+          <p>Tạo phòng ban để bắt đầu sắp xếp hồ sơ nhân viên.</p>
+          <a class="button button-primary" href="/departments">{{ icon('plus') }} Tạo phòng ban</a>
+        </div>
+      {% endif %}
     </section>
-
-    <section class="panel">
-        <h2>Ngừng hoạt động</h2>
-        <p><strong>{{ inactive_employees }}</strong></p>
-        <a class="text-link" href="/employees?status=Inactive">
-            Xem nhân viên ngừng hoạt động
-        </a>
-    </section>
-
-    <section class="panel">
-        <h2>Phòng ban</h2>
-        <p><strong>{{ total_departments }}</strong></p>
-        <a class="text-link" href="/departments">
-            Xem phòng ban
-        </a>
-    </section>
-</div>
+  </div>
 {% endblock %}

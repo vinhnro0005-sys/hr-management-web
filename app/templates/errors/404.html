@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{# B02: rendered only once the backend adds an HTML 404 handler (see FRONTEND_UPGRADE_REPORT.md). Context: message (optional). #}
+{% set page_title = 'Không tìm thấy trang' %}
+{% block eyebrow %}<p class="eyebrow">Lỗi 404</p>{% endblock %}
+{% block content %}
+  <section class="panel empty-state not-found">
+    {{ empty_art('search') }}
+    <h3>{{ message if message is defined and message else 'Trang hoặc hồ sơ bạn tìm không tồn tại.' }}</h3>
+    <p>Đường dẫn có thể đã sai, hoặc hồ sơ đã bị đổi mã.</p>
+    <div class="heading-actions not-found-actions">
+      <a class="button" href="/employees">{{ icon('people') }} Danh sách nhân viên</a>
+      <a class="button button-primary" href="/">Về trang chính</a>
+    </div>
+  </section>
+{% endblock %}

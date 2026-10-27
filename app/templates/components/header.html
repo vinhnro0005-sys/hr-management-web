@@ -15,9 +15,8 @@
     <button type="button" class="theme-toggle" aria-pressed="false" hidden>{{ icon('theme') }}<span class="theme-label">Chế độ tối</span>
     </button>
     {% if not is_login %}
-      <a class="account-link" href="/profile" aria-label="Mở hồ sơ cá nhân">{{ icon('person') }}<span>
-          {% if user is defined %}{{ user.username }}{% else %}Hồ sơ cá nhân{% endif %}
-        </span>
+      {# Not every page receives `user`, so the label stays the same everywhere. #}
+      <a class="account-link" href="/profile">{{ icon('person') }}<span>Hồ sơ cá nhân</span>
       </a>
     {% endif %}
   </div>

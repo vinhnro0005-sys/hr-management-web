@@ -1,27 +1,16 @@
+{# The hero carries name, code, position, department and status; the sections below hold only what it does not. #}
 <section class="panel profile-panel" aria-label="Thông tin nhân viên">
   <div class="profile-hero">
-    <div class="profile-identity">{{ avatar(true) }}<div>
-        <p class="eyebrow">{{ employee.id }}</p>
+    <div class="profile-identity">{{ avatar(employee, true) }}<div>
+        <p class="eyebrow mono">{{ employee.id }}</p>
         <h2>{{ employee.name }}</h2>
         <p>{{ employee.position or 'Chưa cập nhật chức vụ' }}<span class="profile-separator"> · </span>{{ department.name if department else 'Chưa phân phòng' }}</p>
       </div>
     </div>{{ status_badge(employee.status) }}</div>
   <div class="profile-sections">
     <section>
-      <h3>Thông tin cá nhân</h3>
+      <h3>Liên hệ</h3>
       <dl class="info-grid">
-        <div>
-          <dt>Họ và tên</dt>
-          <dd>{{ employee.name }}</dd>
-        </div>
-        <div>
-          <dt>Ngày sinh</dt>
-          <dd>{{ employee.birthday.strftime('%d/%m/%Y') if employee.birthday else 'Chưa cập nhật' }}</dd>
-        </div>
-        <div>
-          <dt>Giới tính</dt>
-          <dd>{{ employee.gender or 'Chưa cập nhật' }}</dd>
-        </div>
         <div>
           <dt>Điện thoại</dt>
           <dd>{{ employee.phone or 'Chưa cập nhật' }}</dd>
@@ -37,27 +26,19 @@
       </dl>
     </section>
     <section>
-      <h3>Thông tin công việc</h3>
+      <h3>Cá nhân và công việc</h3>
       <dl class="info-grid">
         <div>
-          <dt>Mã nhân viên</dt>
-          <dd class="mono">{{ employee.id }}</dd>
+          <dt>Ngày sinh</dt>
+          <dd>{{ employee.birthday.strftime('%d/%m/%Y') if employee.birthday else 'Chưa cập nhật' }}</dd>
         </div>
         <div>
-          <dt>Phòng ban</dt>
-          <dd>{{ department.name if department else 'Chưa phân phòng' }}</dd>
-        </div>
-        <div>
-          <dt>Chức vụ</dt>
-          <dd>{{ employee.position or 'Chưa cập nhật' }}</dd>
+          <dt>Giới tính</dt>
+          <dd>{{ employee.gender or 'Chưa cập nhật' }}</dd>
         </div>
         <div>
           <dt>Ngày vào làm</dt>
           <dd>{{ employee.start_date.strftime('%d/%m/%Y') if employee.start_date else 'Chưa cập nhật' }}</dd>
-        </div>
-        <div>
-          <dt>Trạng thái</dt>
-          <dd>{{ status_badge(employee.status) }}</dd>
         </div>
       </dl>
     </section>

@@ -72,10 +72,10 @@ def test_auth_full_flow():
     assert match is not None
     csrf_token = match.group(1)
 
-    # 5. POST /login as admin -> redirect /employees
+    # 5. POST /login as admin -> redirect /dashboard
     res = client.post("/login", data={"username": "admin", "password": "admin123", "csrf_token": csrf_token})
     assert res.status_code == 303
-    assert res.headers["location"] == "/employees"
+    assert res.headers["location"] == "/dashboard"
 
     # 6. Admin can access /employees
     res = client.get("/employees")
@@ -83,7 +83,9 @@ def test_auth_full_flow():
     assert "Danh sách nhân viên" in res.text
 
     # 7. Admin logout -> redirect to /login
-    res = client.post("/logout")
+    logout_token = re.search(r'name="csrf_token" value="([^"]+)"', res.text).group(1)
+    assert client.post("/logout").status_code == 403
+    res = client.post("/logout", data={"csrf_token": logout_token})
     assert res.status_code == 303
     assert res.headers["location"] == "/login"
 

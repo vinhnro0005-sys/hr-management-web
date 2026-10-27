@@ -49,17 +49,17 @@ def get_employee_list_data(
     if department_id and department_id not in valid_department_ids:
         raise HTTPException(
             status_code=400,
-            detail="phong ban khong hop le",
+            detail="Phòng ban không hợp lệ",
         )
     if status not in ("", "Active", "Inactive"):
         raise HTTPException(
             status_code=400,
-            detail="trang thai khong hop le",
+            detail="Trạng thái không hợp lệ",
         )
     if position and position not in positions:
         raise HTTPException(
             status_code=400,
-            detail="chuc vu ko hop le"
+            detail="Chức vụ không hợp lệ"
         )
     department_id_value = None
 
@@ -88,22 +88,22 @@ def create_employee(db: Session, data: EmployeeCreate):
     existing_employee = get_employee_by_id(db, data.id)
 
     if existing_employee is not None:
-        return None, "ma nhan vien da ton tai"
+        return None, {"field": "id", "message": "Mã nhân viên đã tồn tại"}
 
     department = get_department_by_id(db, data.department_id)
 
     if department is None:
-        return None, "phong ban ko ton tai"
+        return None, {"field": "department_id", "message": "Phòng ban không tồn tại"}
     if data.email is not None:
         existing_employee = get_employee_by_email(db, data.email)
         if existing_employee is not None:
-            return None, "email da dc su dung"
+            return None, {"field": "email", "message": "Email đã được sử dụng"}
 
     username = data.id
 
     existing_user = AuthService.get_user_by_username(db, username)
     if existing_user is not None:
-        return None, "ma nhan vien nay trung ten tai khoan da co"
+        return None, {"field": "id", "message": "Mã nhân viên này trùng với tên tài khoản đã có"}
 
     initial_password = secrets.token_urlsafe(12)
     password_hash = hash_password(initial_password)
@@ -148,7 +148,7 @@ def get_employee_detail_data(db: Session, employee_id: str):
     if employee is None:
         raise HTTPException(
             status_code=404,
-            detail="khong tim thay nhan vien",
+            detail="Không tìm thấy nhân viên",
         )
     department = get_department_by_id(
         db,
@@ -168,13 +168,13 @@ def update_employee(
     department = get_department_by_id(db, data.department_id)
 
     if department is None:
-        return "Phong ban ko ton tai"
+        return {"field": "department_id", "message": "Phòng ban không tồn tại"}
     if data.email is not None:
         existing_employee = get_employee_by_email(db, data.email)
 
         if existing_employee is not None:
             if existing_employee.id != employee.id:
-                return " Email da dc su dung"
+                return {"field": "email", "message": "Email đã được sử dụng"}
 
     values = data.model_dump()
     update_employee_fields(employee, values)
@@ -187,7 +187,7 @@ def get_employee_edit_data(db: Session, employee_id: str):
     if employee is None:
         raise HTTPException(
             status_code=404,
-            detail="khong tim thay nhan vien",
+            detail="Không tìm thấy nhân viên",
         )
 
     departments = get_all_departments(db)
@@ -224,7 +224,7 @@ def deactive_employee(db: Session, employee_id: str):
     if employee is None:
         raise HTTPException(
             status_code=404,
-            detail = "khong tim thay nhan vien",
+            detail = "Không tìm thấy nhân viên",
         )
     if employee.status == "Inactive":
         return

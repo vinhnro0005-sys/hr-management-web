@@ -1,23 +1,17 @@
 {% extends 'base.html' %}
 {% set page_title = 'Danh sách nhân viên' %}
-{% block description %}Tra cứu và quản lý thông tin nhân viên trong tổ chức.{% endblock %}
+{% block description %}{% endblock %}
 {% block actions %}
   <a class="button button-primary" href="/employees/create">{{ icon('plus') }} Thêm nhân viên</a>
 {% endblock %}
 {% block content %}
-  <section class="panel directory-panel" aria-label="Danh bạ nhân viên">
-    <div class="panel-heading">
-      <div>
-        <h2>Danh bạ nhân viên</h2>
-        <p>{{ employees|length }} kết quả{% if q or selected_department or selected_status or selected_position %} phù hợp với bộ lọc{% endif %}
-        </p>
-      </div>
-      <span class="section-marker" aria-hidden="true">{{ icon('people') }}</span>
-    </div>
+  {% set back_query = list_query() %}
+  {% set filtered = q or selected_department or selected_status or selected_position %}
+  <section class="panel directory-panel" aria-label="Danh sách nhân viên">
     <form class="filter-form" method="get" action="/employees" data-loading-target=".directory-panel">
       <div class="field search-field">
         <label for="q">Tìm nhân viên</label>
-        <div class="input-icon">{{ icon('search') }}<input id="q" name="q" value="{{ q }}" placeholder="Nhập mã hoặc họ tên">
+        <div class="input-icon">{{ icon('search') }}<input id="q" name="q" value="{{ q }}" placeholder="Nhập mã hoặc họ tên" data-search-shortcut aria-keyshortcuts="/"><kbd class="kbd-hint" aria-hidden="true">/</kbd>
         </div>
       </div>
       <div class="field">
@@ -48,49 +42,54 @@
       </div>
       <div class="filter-actions">
         <button class="button button-primary" type="submit">{{ icon('search') }} Tìm / Lọc</button>
-        <a class="text-link" href="/employees">Xóa bộ lọc</a>
       </div>
     </form>
+    <div class="directory-meta">
+      <p><strong>{{ employees|length }}</strong> nhân viên{% if filtered %} phù hợp bộ lọc{% endif %}</p>
+      {% if filtered %}<a class="text-link" href="/employees">Xóa bộ lọc</a>{% endif %}
+    </div>
     <p class="table-hint" id="employee-table-hint">Cuộn ngang để xem đầy đủ thông tin và thao tác.</p>
     <div class="table-region">
     <div class="table-scroll" role="region" aria-label="Bảng nhân viên" aria-describedby="employee-table-hint" tabindex="0">
       <table class="employee-table">
-        <caption class="sr-only">Danh sách nhân viên và các thao tác xem, sửa hồ sơ</caption>
+        <caption class="sr-only">Danh sách nhân viên; chọn tên để xem hồ sơ</caption>
         <thead>
           <tr>
             <th scope="col">Nhân viên</th>
             <th scope="col">Phòng ban</th>
             <th scope="col">Chức vụ</th>
             <th scope="col">Trạng thái</th>
-            <th scope="col" class="action-cell">Thao tác</th>
+            <th scope="col" class="action-cell"><span class="sr-only">Thao tác</span></th>
           </tr>
         </thead>
         <tbody>
           {% for employee, department_name in employees %}
-            <tr data-row-key="{{ employee.id }}" style="--i: {{ loop.index0 }}">
+            <tr data-row-key="{{ employee.id }}">
               <td>
-                <div class="person-cell">{{ avatar() }}<div>
-                    <a class="person-name" href="/employees/{{ employee.id|urlencode }}">{{ employee.name }}</a>
+                <div class="person-cell">{{ avatar(employee) }}<div>
+                    <a class="person-name" href="/employees/{{ employee.id|urlencode }}{{ back_query }}">{{ employee.name }}</a>
                     <span class="employee-code">{{ employee.id }}</span>
                   </div>
                 </div>
               </td>
               <td>{{ department_name }}</td>
-              <td>{{ employee.position or 'Chưa cập nhật' }}</td>
+              <td{% if not employee.position %} class="muted-cell"{% endif %}>{{ employee.position or 'Chưa cập nhật' }}</td>
               <td>{{ status_badge(employee.status) }}</td>
               <td class="action-cell">
-                <div class="row-actions">
-                  <a class="button button-small button-ghost action-view" href="/employees/{{ employee.id|urlencode }}" aria-label="Xem hồ sơ {{ employee.name }}">{{ icon('eye') }} Xem</a>
-                  <a class="button button-small action-edit" href="/employees/{{ employee.id|urlencode }}/edit" aria-label="Sửa hồ sơ {{ employee.name }}">{{ icon('edit') }} Sửa</a>
-                </div>
+                <a class="button button-small action-edit" href="/employees/{{ employee.id|urlencode }}/edit{{ back_query }}" aria-label="Sửa hồ sơ {{ employee.name }}">{{ icon('edit') }} Sửa</a>
               </td>
             </tr>
           {% else %}
             <tr>
               <td colspan="5">
-                <div class="empty-state">{{ icon('search') }}<h3>Chưa có nhân viên phù hợp</h3>
-                  <p>Thử đổi từ khóa hoặc xóa bộ lọc để xem lại danh sách.</p>
-                  <a class="text-link" href="/employees">Xem tất cả nhân viên</a>
+                <div class="empty-state">{{ empty_art('search' if filtered else 'people') }}<h3>{% if filtered %}Chưa có nhân viên phù hợp{% else %}Chưa có hồ sơ nhân viên{% endif %}</h3>
+                  {% if filtered %}
+                    <p>Thử đổi từ khóa hoặc xóa bộ lọc để xem lại danh sách.</p>
+                    <a class="text-link" href="/employees">Xem tất cả nhân viên</a>
+                  {% else %}
+                    <p>Thêm hồ sơ đầu tiên để bắt đầu quản lý nhân sự.</p>
+                    <a class="button button-primary" href="/employees/create">{{ icon('plus') }} Thêm nhân viên</a>
+                  {% endif %}
                 </div>
               </td>
             </tr>
@@ -98,8 +97,6 @@
         </tbody>
       </table>
     </div>
-    </div>
-    <div class="table-footer">Hiển thị {{ employees|length }} kết quả <span>Chọn tên nhân viên để xem hồ sơ</span>
     </div>
   </section>
 {% endblock %}

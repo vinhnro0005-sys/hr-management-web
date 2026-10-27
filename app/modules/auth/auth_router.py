@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -127,13 +127,12 @@ def login(
 # Đăng xuất
 # ---------------------------------------------------------------------------
 @router.post("/logout")
-def logout(request: Request):
-    request.session.clear()
-    return redirect(LOGIN_URL)
-
-
-@router.get("/logout")
-def logout_get(request: Request):
+def logout(request: Request, csrf_token: str = Form("")):
+    if not verify_csrf_token(request.session.get("csrf_token"), csrf_token):
+        raise HTTPException(
+            status_code=403,
+            detail="Phiên làm việc đã hết hạn hoặc thiếu mã CSRF. Hãy tải lại trang rồi thử lại.",
+        )
     request.session.clear()
     return redirect(LOGIN_URL)
 

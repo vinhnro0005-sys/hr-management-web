@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% set page_title = 'Hồ sơ cá nhân' %}
-{% block eyebrow %}Tài khoản của bạn{% endblock %}
 {% block description %}Xem thông tin hồ sơ và tài khoản đang đăng nhập.{% endblock %}
 {% block content %}
   {% if employee %}{% include 'employees/info.html' %}{% endif %}

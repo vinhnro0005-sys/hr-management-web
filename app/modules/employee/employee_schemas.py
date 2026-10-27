@@ -56,7 +56,7 @@ class EmployeeBase(BaseModel):
         pattern = r"[^@\s]+@[^@\s]+\.[^@\s]+"
 
         if re.fullmatch(pattern, value) is None:
-            raise ValueError("Email ko dung dinh dang")
+            raise ValueError("Email không đúng định dạng")
         return value
 
     #check xem ngay sinh co hop ly ko
@@ -65,7 +65,7 @@ class EmployeeBase(BaseModel):
     def validate_birthday(cls, value: str | None):
         if value is not None:
             if value > date.today():
-                raise ValueError("Ngay sinh ko dc nam trong tuong lai")
+                raise ValueError("Ngày sinh không được nằm trong tương lai")
         return value
 
     #check xem ngay vao lam co hop ly
@@ -76,7 +76,7 @@ class EmployeeBase(BaseModel):
 
         if birthday is not None and value is not None:
             if value < birthday:
-                raise ValueError("Ngay vao lam ko dc trc ngay sinh")
+                raise ValueError("Ngày vào làm không được trước ngày sinh")
         return value
 
 class EmployeeCreate(EmployeeBase):

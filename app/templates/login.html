@@ -8,13 +8,40 @@
         <span>ở cùng một nơi.</span>
       </h2>
       <p>Tra cứu, cập nhật hồ sơ nhân viên và sắp xếp phòng ban trong tổ chức.</p>
-      <div class="login-art" aria-hidden="true">
-        <div class="art-line">
-        </div>
-        <div class="art-person art-person-one">{{ icon('person') }}</div>
-        <div class="art-person art-person-two">{{ icon('person') }}</div>
-        <div class="art-person art-person-three">{{ icon('person') }}</div>
-      </div>
+      {# A small, abstract picture of the product: a staff directory card, a department chart card and a status chip.
+         Colours come from theme tokens; only transforms animate (see .la-* in style.css). #}
+      <svg class="login-art" width="400" height="244" viewBox="0 0 400 244" fill="none" aria-hidden="true">
+        <g class="la-back">
+          <rect class="la-shadow" x="10" y="44" width="236" height="176" rx="16"/>
+          <rect class="la-card" x="4" y="36" width="236" height="176" rx="16"/>
+          <rect class="la-ink-soft" x="24" y="56" width="84" height="8" rx="4"/>
+          <rect class="la-ink-faint" x="176" y="54" width="44" height="12" rx="6"/>
+          <path class="la-divider" d="M4 80h236"/>
+          {% for y, tone, w in [(104, 0, 92), (144, 3, 76), (184, 5, 86)] %}
+            <circle class="la-avatar avatar-tone-{{ tone }}" cx="40" cy="{{ y }}" r="14"/>
+            <rect class="la-ink" x="64" y="{{ y - 9 }}" width="{{ w }}" height="7" rx="3.5"/>
+            <rect class="la-ink-faint" x="64" y="{{ y + 4 }}" width="{{ w - 34 }}" height="6" rx="3"/>
+            <rect class="{% if loop.index == 2 %}la-pill-amber{% else %}la-pill{% endif %}" x="180" y="{{ y - 8 }}" width="40" height="16" rx="8"/>
+          {% endfor %}
+        </g>
+        <g class="la-front">
+          <rect class="la-shadow" x="214" y="116" width="178" height="124" rx="16"/>
+          <rect class="la-card" x="208" y="108" width="178" height="124" rx="16"/>
+          <rect class="la-ink-soft" x="226" y="126" width="70" height="7" rx="3.5"/>
+          {% for y, w, cls in [(152, 118, 'la-bar'), (176, 82, 'la-bar'), (200, 44, 'la-bar-amber')] %}
+            <rect class="la-track" x="226" y="{{ y }}" width="142" height="10" rx="5"/>
+            <rect class="{{ cls }}" x="226" y="{{ y }}" width="{{ w }}" height="10" rx="5"/>
+          {% endfor %}
+        </g>
+        <g class="la-chip">
+          <rect class="la-shadow" x="254" y="20" width="138" height="44" rx="22"/>
+          <rect class="la-card" x="250" y="14" width="138" height="44" rx="22"/>
+          <circle class="la-check-bg" cx="274" cy="36" r="12"/>
+          <path class="la-check" d="m268.5 36.5 3.8 3.8 7.2-7.6"/>
+          <rect class="la-ink" x="294" y="27" width="74" height="7" rx="3.5"/>
+          <rect class="la-ink-faint" x="294" y="39" width="50" height="6" rx="3"/>
+        </g>
+      </svg>
     </section>
     <section class="panel login-card" aria-labelledby="login-title">
       <div class="login-card-heading">

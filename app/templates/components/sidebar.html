@@ -1,8 +1,14 @@
 <aside class="sidebar" id="sidebar" aria-label="Điều hướng chính" tabindex="-1">
   <div class="sidebar-brand">
-    <a href="/" class="brand-name">Hệ thống<br>
-      <strong>Quản lý Nhân sự<span class="brand-dot">.</span>
-      </strong>
+    <a href="/" class="brand-name">
+      <svg class="brand-mark" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+        <rect class="brand-mark-bg" width="36" height="36" rx="10"/>
+        <path class="brand-mark-line" d="M18 13.5v4.5M11 23v-3h14v3"/>
+        <circle class="brand-mark-node" cx="18" cy="10.5" r="3.5"/>
+        <circle class="brand-mark-node" cx="11" cy="25.5" r="3"/>
+        <circle class="brand-mark-node" cx="25" cy="25.5" r="3"/>
+      </svg>
+      <span class="brand-text">Hệ thống<strong>Quản lý Nhân sự</strong></span>
     </a>
     <button type="button" class="icon-button sidebar-close" aria-label="Đóng điều hướng" hidden>{{ icon('close') }}</button>
   </div>
@@ -10,7 +16,7 @@
   <nav aria-label="Chức năng">
     {% if is_admin %}
       {% set on_dashboard = path == '/dashboard' %}
-      <a class="nav-item" href="/dashboard"{% if on_dashboard %} aria-current="page"{% endif %}>{% if on_dashboard %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('building') }}<span>Tổng quan</span>
+      <a class="nav-item" href="/dashboard"{% if on_dashboard %} aria-current="page"{% endif %}>{% if on_dashboard %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('dashboard') }}<span>Tổng quan</span>
       </a>
       {% set on_employees = path.startswith('/employees') %}
       {% set on_departments = path.startswith('/departments') %}
@@ -22,8 +28,16 @@
     <a class="nav-item" href="/profile"{% if path == '/profile' %} aria-current="page"{% endif %}>{% if path == '/profile' %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('person') }}<span>Hồ sơ cá nhân</span>
     </a>
   </nav>
+  {# Not every route passes `user`, so the card shows the role (known from the section) rather than a username. #}
   <div class="sidebar-bottom">
-    <form method="post" action="/logout">{{ csrf_field() }}<button class="logout-button" type="submit">{{ icon('logout') }} Đăng xuất</button>
+    <div class="sidebar-account">
+      <span class="account-mark" aria-hidden="true">{{ icon('person') }}</span>
+      <div>
+        <strong>{% if is_admin %}Quản trị viên{% else %}Nhân viên{% endif %}</strong>
+        <span>Đang đăng nhập</span>
+      </div>
+    </div>
+    <form method="post" action="/logout" data-loading-text="Đang đăng xuất…" data-no-transition>{{ csrf_field() }}<button class="logout-button" type="submit">{{ icon('logout') }} Đăng xuất</button>
     </form>
   </div>
 </aside>

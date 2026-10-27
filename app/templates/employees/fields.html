@@ -1,7 +1,3 @@
-<div class="form-intro">
-  <h2>Thông tin hồ sơ</h2>
-  <p>Các trường có dấu <span class="required">*</span> là bắt buộc.</p>
-</div>
 <fieldset>
   <legend>Thông tin cá nhân</legend>
   <div class="form-grid">
@@ -9,8 +5,9 @@
       <div class="field">
         <label for="id">Mã nhân viên <span class="required">*</span>
         </label>
-        <input id="id" name="id" value="{{ form_data.get('id', '') }}" maxlength="20" required aria-describedby="id-hint">
+        <input id="id" name="id" value="{{ form_data.get('id', '') }}" maxlength="20" required{{ field_aria('id', 'id-hint') }}>
         <small id="id-hint">Tối đa 20 ký tự, không trùng mã đã có.</small>
+        {{ field_error('id') }}
       </div>
     {% else %}
       <div class="field">
@@ -22,32 +19,38 @@
     <div class="field">
       <label for="name">Họ và tên <span class="required">*</span>
       </label>
-      <input id="name" name="name" value="{{ form_data.get('name', '') }}" maxlength="100" autocomplete="name" required>
+      <input id="name" name="name" value="{{ form_data.get('name', '') }}" maxlength="100" autocomplete="name" required{{ field_aria('name') }}>
+      {{ field_error('name') }}
     </div>
     <div class="field">
       <label for="birthday">Ngày sinh</label>
-      <input id="birthday" name="birthday" type="date" value="{{ form_data.get('birthday', '') }}" autocomplete="bday">
+      <input id="birthday" name="birthday" type="date" value="{{ form_data.get('birthday', '') }}" autocomplete="bday"{{ field_aria('birthday') }}>
+      {{ field_error('birthday') }}
     </div>
     <div class="field">
       <label for="gender">Giới tính</label>
-      <select id="gender" name="gender">
+      <select id="gender" name="gender"{{ field_aria('gender') }}>
         <option value="">Chưa cập nhật</option>
         {% for gender_name in ['Nam', 'Nữ', 'Khác'] %}
           <option value="{{ gender_name }}" {% if form_data.get('gender') == gender_name %}selected{% endif %}>{{ gender_name }}</option>
         {% endfor %}
       </select>
+      {{ field_error('gender') }}
     </div>
     <div class="field">
       <label for="phone">Điện thoại</label>
-      <input id="phone" name="phone" type="tel" value="{{ form_data.get('phone', '') }}" maxlength="20" autocomplete="tel">
+      <input id="phone" name="phone" type="tel" value="{{ form_data.get('phone', '') }}" maxlength="20" autocomplete="tel"{{ field_aria('phone') }}>
+      {{ field_error('phone') }}
     </div>
     <div class="field">
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" value="{{ form_data.get('email', '') }}" maxlength="255" autocomplete="email">
+      <input id="email" name="email" type="email" value="{{ form_data.get('email', '') }}" maxlength="255" autocomplete="email"{{ field_aria('email') }}>
+      {{ field_error('email') }}
     </div>
     <div class="field field-wide">
       <label for="address">Địa chỉ</label>
-      <input id="address" name="address" value="{{ form_data.get('address', '') }}" maxlength="255" autocomplete="street-address">
+      <input id="address" name="address" value="{{ form_data.get('address', '') }}" maxlength="255" autocomplete="street-address"{{ field_aria('address') }}>
+      {{ field_error('address') }}
     </div>
   </div>
 </fieldset>
@@ -57,23 +60,26 @@
     <div class="field">
       <label for="department_id">Phòng ban <span class="required">*</span>
       </label>
-      <select id="department_id" name="department_id" required>
+      <select id="department_id" name="department_id" required{{ field_aria('department_id') }}>
         <option value="">Chọn phòng ban</option>
         {% for department in departments %}
           <option value="{{ department.id }}" {% if form_data.get('department_id', '')|string == department.id|string %}selected{% endif %}>{{ department.name }}</option>
         {% endfor %}
       </select>
+      {{ field_error('department_id') }}
       {% if not departments %}
         <small>Chưa có phòng ban. <a class="text-link" href="/departments">Thêm phòng ban</a> trước khi tạo hồ sơ.</small>
       {% endif %}
     </div>
     <div class="field">
       <label for="position">Chức vụ</label>
-      <input id="position" name="position" value="{{ form_data.get('position', '') }}" maxlength="100" autocomplete="organization-title">
+      <input id="position" name="position" value="{{ form_data.get('position', '') }}" maxlength="100" autocomplete="organization-title"{{ field_aria('position') }}>
+      {{ field_error('position') }}
     </div>
     <div class="field">
       <label for="start_date">Ngày vào làm</label>
-      <input id="start_date" name="start_date" type="date" value="{{ form_data.get('start_date', '') }}">
+      <input id="start_date" name="start_date" type="date" value="{{ form_data.get('start_date', '') }}"{{ field_aria('start_date') }}>
+      {{ field_error('start_date') }}
     </div>
   </div>
 </fieldset>

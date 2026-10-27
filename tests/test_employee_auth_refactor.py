@@ -27,10 +27,14 @@ def test_employee_auth_refactor():
     })
     assert login.status_code == 303
 
+    form_page = client.get("/employees/create")
+    csrf = re.search(r'name="csrf_token" value="([^"]+)"', form_page.text).group(1)
+
     with SessionLocal() as db:
         department_id = db.get(Employee, "NV001").department_id
 
     data = {
+        "csrf_token": csrf,
         "id": "TEST_REFACTOR",
         "name": "Test refactor",
         "department_id": str(department_id),
@@ -38,7 +42,9 @@ def test_employee_auth_refactor():
         "birthday": "",
         "start_date": "",
     }
-    assert client.post("/employees/create", data=data).status_code == 303
+    created = client.post("/employees/create", data=data)
+    assert created.status_code == 200
+    assert "credential-panel" in created.text
     duplicate = client.post("/employees/create", data=data)
     assert duplicate.status_code == 400
     assert 'value="TEST_REFACTOR"' in duplicate.text
@@ -57,8 +63,9 @@ def test_employee_auth_refactor():
     assert re.search(r'value="' + str(department_id) + r'"\s+selected', invalid.text)
 
     assert client.get("/employees/TEST_REFACTOR/edit").status_code == 200
-    assert client.post("/employees/TEST_REFACTOR/deactivate").status_code == 303
-    assert client.post("/employees/TEST_REFACTOR/deactivate").status_code == 303
+    assert client.post("/employees/TEST_REFACTOR/deactivate", data={"csrf_token": csrf}).status_code == 303
+    assert client.post("/employees/TEST_REFACTOR/deactivate", data={"csrf_token": csrf}).status_code == 303
+    assert client.post("/employees/TEST_REFACTOR/deactivate").status_code == 403
     with SessionLocal() as db:
         assert db.get(Employee, "TEST_REFACTOR").status == "Inactive"
 

@@ -17,11 +17,20 @@
   };
 
   // Remove an element after its exit animation (or at once when motion is reduced).
+  // Removing `is-leaving` before then cancels the exit.
   function leave(element, onDone) {
-    const finish = () => { element.remove(); onDone?.(); };
-    if (reduceMotion.matches) { finish(); return; }
+    let done = false;
+    const finish = () => {
+      if (done || !element.classList.contains('is-leaving')) return;
+      done = true;
+      element.remove();
+      onDone?.();
+    };
     element.classList.add('is-leaving');
-    element.addEventListener('animationend', finish, { once: true });
+    if (reduceMotion.matches) { finish(); return; }
+    element.addEventListener('animationend', event => { if (event.target === element) finish(); });
+    // A hidden or force-closed element never fires animationend.
+    setTimeout(finish, 400);
   }
 
   /* Theme */
@@ -41,18 +50,32 @@
   themeButton.hidden = false;
   updateThemeButton();
   const toggleTheme = () => applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+  // Pages with passwords or hand-off credentials are never captured into a view-transition snapshot.
+  const noSnapshot = Boolean(document.querySelector('meta[name="hr-no-snapshot"]'));
   themeButton.addEventListener('click', () => {
     if (reduceMotion.matches) { toggleTheme(); return; }
-    if (document.startViewTransition && document.visibilityState === 'visible') {
+    if (document.startViewTransition && document.visibilityState === 'visible' && !noSnapshot) {
       root.classList.add('theme-switching');
       const transition = document.startViewTransition(toggleTheme);
+      const done = () => root.classList.remove('theme-switching');
+      // A skipped transition (hidden tab, navigation started) rejects `ready`; the theme is already applied then.
       transition.ready.catch(() => {});
-      transition.finished.finally(() => root.classList.remove('theme-switching'));
+      // then(done, done) rather than finally(): finally() returns a new promise that would re-reject unhandled.
+      transition.finished.then(done, done);
       return;
     }
     root.classList.add('theme-fallback');
     toggleTheme();
-    setTimeout(() => root.classList.remove('theme-fallback'), 320);
+    setTimeout(() => root.classList.remove('theme-fallback'), 280);
+  });
+
+  /* Press feedback: Enter/Space get the same short press as a pointer (:active). */
+  document.addEventListener('keydown', event => {
+    if (event.repeat || (event.key !== 'Enter' && event.key !== ' ')) return;
+    const target = event.target.closest?.('.button, .theme-toggle, .icon-button, .kpi');
+    if (!target || (event.key === ' ' && target.tagName === 'A')) return;
+    target.classList.add('is-pressed');
+    setTimeout(() => target.classList.remove('is-pressed'), 120);
   });
 
   /* Sidebar */
@@ -114,7 +137,7 @@
       const pill = sidebar.querySelector('.nav-pill');
       if (!pill || crossDocumentTransitions || reduceMotion.matches) return;
       const distance = link.getBoundingClientRect().top - pill.getBoundingClientRect().top;
-      pill.animate([{ transform: 'none' }, { transform: `translateY(${distance}px)` }], { duration: 260, easing: EASE, fill: 'forwards' });
+      pill.animate([{ transform: 'none' }, { transform: `translateY(${distance}px)` }], { duration: 220, easing: EASE, fill: 'forwards' });
     });
   }
 
@@ -180,29 +203,30 @@
   document.addEventListener('change', recheck);
 
   /* Confirmation dialog */
-  function confirmSubmit(form) {
+  function confirmSubmit(form, submitter) {
     const dialog = document.createElement('dialog');
+    // Re-submit with the original button so its name/value still reach the server.
+    const submit = () => { form.dataset.confirmed = 'true'; form.requestSubmit(submitter?.form === form ? submitter : null); };
     if (typeof dialog.showModal !== 'function') {
-      if (window.confirm(form.dataset.confirm)) { form.dataset.confirmed = 'true'; form.requestSubmit(); }
+      if (window.confirm(form.dataset.confirm)) submit();
       return;
     }
     dialog.className = 'confirm-dialog';
     dialog.setAttribute('aria-labelledby', 'confirm-title');
     dialog.setAttribute('aria-describedby', 'confirm-message');
     dialog.innerHTML = `<div class="confirm-body"><span class="section-marker" aria-hidden="true">${ALERT_ICON}</span><div><h2 id="confirm-title"></h2><p id="confirm-message"></p></div></div>
-      <div class="confirm-actions"><button type="button" class="button" data-choice="cancel">Hủy</button><button type="button" class="button button-danger" data-choice="ok"></button></div>`;
+      <div class="confirm-actions"><button type="button" class="button" data-choice="cancel">Hủy</button><button type="button" class="button button-danger-solid" data-choice="ok"></button></div>`;
     dialog.querySelector('h2').textContent = form.dataset.confirmTitle || 'Xác nhận thao tác';
     dialog.querySelector('p').textContent = form.dataset.confirm;
-    dialog.querySelector('[data-choice="ok"]').textContent = form.querySelector('button[type="submit"]')?.textContent.trim() || 'Xác nhận';
-    const trigger = document.activeElement;
+    dialog.querySelector('[data-choice="ok"]').textContent = buttonLabel(form.querySelector('button[type="submit"]')) || 'Xác nhận';
+    const trigger = submitter || document.activeElement;
     let closing = false;
     function close(confirmed) {
       if (closing) return;
       closing = true;
-      leave(dialog, () => {
-        if (confirmed) { form.dataset.confirmed = 'true'; form.requestSubmit(); }
-        else trigger?.focus?.();
-      });
+      // The request starts at once; the exit animation plays while the next page loads.
+      if (confirmed) submit();
+      leave(dialog, confirmed ? null : () => trigger?.focus?.());
     }
     dialog.addEventListener('cancel', event => { event.preventDefault(); close(false); });
     dialog.addEventListener('click', event => {
@@ -216,23 +240,45 @@
   }
 
   /* Submit feedback */
-  const pendingButtons = new Map();
-  function setButtonLoading(button, text) {
-    pendingButtons.set(button, [...button.childNodes]);
-    button.style.minWidth = `${button.offsetWidth}px`;
-    button.disabled = true;
-    button.classList.add('is-loading');
-    button.innerHTML = SPINNER;
-    button.append(text);
+  // Each submit button stacks its label and its pending label in one grid cell (see .button-stack), so it is as
+  // wide as the longer one from the start: showing the spinner never resizes it or replaces its content.
+  function preparePending(button, text) {
+    const label = document.createElement('span');
+    label.className = 'button-face';
+    label.append(...button.childNodes);
+    const pendingLabel = document.createElement('span');
+    pendingLabel.className = 'button-face';
+    pendingLabel.innerHTML = SPINNER;
+    pendingLabel.append(text);
+    button.classList.add('button-stack');
+    button.replaceChildren(label, pendingLabel);
   }
-  document.querySelectorAll('form[method="post"]').forEach(form => {
+  function buttonLabel(button) {
+    return (button?.querySelector('.button-face') || button)?.textContent.trim();
+  }
+  function setPending(form, pending, lock) {
+    form.querySelectorAll('button[type="submit"]').forEach(button => {
+      button.classList.toggle('is-loading', pending);
+      // aria-disabled, not disabled: a disabled submitter would drop its name/value from the request.
+      // The form's submitting flag blocks repeat submissions instead.
+      if (pending && lock) button.setAttribute('aria-disabled', 'true');
+      else button.removeAttribute('aria-disabled');
+    });
+    const target = form.dataset.loadingTarget ? document.querySelector(form.dataset.loadingTarget) : form;
+    target?.classList.toggle('is-loading', pending && target !== form);
+    if (pending) target?.setAttribute('aria-busy', 'true');
+    else target?.removeAttribute('aria-busy');
+  }
+  const postForms = [...document.querySelectorAll('form[method="post"]')];
+  const getForms = [...document.querySelectorAll('form[method="get"][data-loading-target]')];
+  postForms.forEach(form => {
+    form.querySelectorAll('button[type="submit"]').forEach(button => preparePending(button, form.dataset.loadingText || 'Đang gửi…'));
     form.addEventListener('submit', event => {
       if (form.dataset.submitting === 'true') { event.preventDefault(); return; }
-      if (form.dataset.confirm && form.dataset.confirmed !== 'true') { event.preventDefault(); confirmSubmit(form); return; }
+      if (form.dataset.confirm && form.dataset.confirmed !== 'true') { event.preventDefault(); confirmSubmit(form, event.submitter); return; }
       delete form.dataset.confirmed;
       form.dataset.submitting = 'true';
-      form.setAttribute('aria-busy', 'true');
-      form.querySelectorAll('button[type="submit"]').forEach(button => setButtonLoading(button, form.dataset.loadingText || 'Đang gửi…'));
+      setPending(form, true, true);
       if (form.dataset.success) {
         const highlight = form.dataset.highlightField ? form.elements.namedItem(form.dataset.highlightField)?.value.trim() : '';
         storage.put('hr_pending_toast', JSON.stringify({
@@ -244,36 +290,29 @@
       }
     });
   });
-  document.querySelectorAll('form[method="get"][data-loading-target]').forEach(form => {
-    form.addEventListener('submit', () => {
-      const target = document.querySelector(form.dataset.loadingTarget);
-      target?.classList.add('is-loading');
-      target?.setAttribute('aria-busy', 'true');
-      form.querySelectorAll('button[type="submit"]').forEach(button => setButtonLoading(button, 'Đang tìm…'));
-    });
+  // Searches are never locked: submitting again simply replaces the pending request.
+  getForms.forEach(form => {
+    form.querySelectorAll('button[type="submit"]').forEach(button => preparePending(button, 'Đang tìm…'));
+    form.addEventListener('submit', () => setPending(form, true, false));
   });
+  function resetPending(forms) {
+    forms.forEach(form => {
+      delete form.dataset.submitting;
+      setPending(form, false);
+    });
+  }
   // Restore controls when a page returns from the browser's back/forward cache.
   window.addEventListener('pageshow', () => {
-    document.querySelectorAll('form[data-submitting]').forEach(form => {
-      delete form.dataset.submitting;
-      form.removeAttribute('aria-busy');
-    });
-    document.querySelectorAll('.is-loading[aria-busy]').forEach(target => {
-      target.classList.remove('is-loading');
-      target.removeAttribute('aria-busy');
-    });
-    pendingButtons.forEach((children, button) => {
-      button.disabled = false;
-      button.classList.remove('is-loading');
-      button.style.minWidth = '';
-      button.replaceChildren(...children);
-    });
-    pendingButtons.clear();
+    resetPending([...postForms, ...getForms]);
     document.querySelectorAll('.nav-item.is-target, .nav-item.is-leaving-nav').forEach(item => item.classList.remove('is-target', 'is-leaving-nav'));
     document.querySelector('.nav-pill')?.getAnimations().forEach(animation => animation.cancel());
   });
+  // A stopped or failed load keeps this page: searches look idle again. POST forms stay locked, because an
+  // aborted response does not prove the server did not act on the request; reloading the page unlocks them.
+  window.navigation?.addEventListener('navigateerror', () => resetPending(getForms));
 
-  /* Success toast: the server redirects to another page only when a save succeeded. */
+  /* Success toast: shown only on the page a successful POST redirected to (Post/Redirect/Get).
+     An error response, a Back/Forward visit or a later link click must never announce success. */
   function showToast(message) {
     let region = document.querySelector('.toast-region');
     if (!region) {
@@ -301,7 +340,9 @@
   if (pending) {
     try {
       const { message, action, highlight, at } = JSON.parse(pending);
-      const succeeded = location.pathname !== action && location.pathname !== '/login' && !document.getElementById('form-error');
+      const navigation = performance.getEntriesByType?.('navigation')[0];
+      const redirected = navigation?.type === 'navigate' && navigation.redirectCount > 0;
+      const succeeded = redirected && location.pathname !== action && location.pathname !== '/login' && !document.getElementById('form-error');
       if (succeeded && Date.now() - at < 30000) {
         showToast(message);
         const row = highlight && document.querySelector(`tr[data-row-key="${CSS.escape(highlight)}"]`);
@@ -311,6 +352,45 @@
         }
       }
     } catch { /* Ignore malformed feedback state. */ }
+  }
+
+  /* Hand-off: copy one credential on an explicit click. Its value never goes to a toast, log or storage. */
+  const copyStatus = document.querySelector('.copy-status');
+  document.querySelectorAll('[data-copy]').forEach(button => {
+    const source = document.getElementById(button.dataset.copy);
+    if (!source || !copyStatus) return;
+    const name = source.closest('div')?.querySelector('dt')?.textContent.trim().toLowerCase() || 'giá trị';
+    let timer;
+    button.hidden = false;
+    button.addEventListener('click', async () => {
+      clearTimeout(timer);
+      button.classList.remove('is-copied');
+      copyStatus.classList.remove('is-error');
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+        await navigator.clipboard.writeText(source.textContent);
+        button.classList.add('is-copied');
+        copyStatus.textContent = `Đã sao chép ${name}.`;
+        timer = setTimeout(() => button.classList.remove('is-copied'), 2000);
+      } catch {
+        // Blocked or unsupported: select the value so it can be copied by hand.
+        getSelection()?.selectAllChildren(source);
+        copyStatus.classList.add('is-error');
+        copyStatus.textContent = `Không sao chép tự động được ${name}. Giá trị đã được chọn, nhấn Ctrl+C để sao chép.`;
+      }
+    });
+  });
+
+  /* "/" focuses the page's search field unless the user is typing somewhere. */
+  const searchField = document.querySelector('[data-search-shortcut]');
+  if (searchField) {
+    document.addEventListener('keydown', event => {
+      if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented) return;
+      if (event.target.closest?.('input, textarea, select, [contenteditable]')) return;
+      event.preventDefault();
+      searchField.focus();
+      searchField.select();
+    });
   }
 
   /* Login: a soft light and the illustration follow the pointer. */
@@ -336,6 +416,13 @@
       });
     }, { passive: true });
   }
+
+  /* Dashboard: the time these server-rendered numbers were read. */
+  const timeFormat = new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+  document.querySelectorAll('[data-today]').forEach(element => {
+    element.textContent = ` Cập nhật lúc ${timeFormat.format(new Date())}.`;
+    element.hidden = false;
+  });
 
   document.getElementById('form-error')?.focus();
 })();

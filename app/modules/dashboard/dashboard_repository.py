@@ -22,3 +22,23 @@ def count_departments(db: Session):
     statement = select(func.count(Department.id))
 
     return db.scalar(statement)
+
+def count_employees_by_department(db: Session):
+    statement = select(
+        Department.id,
+        Department.name,
+        func.count(Employee.id).label("employee_count"),
+    )
+
+    statement = statement.outerjoin(
+        Employee,
+        Department.id == Employee.department_id
+    )
+
+    statement = statement.group_by(
+        Department.id,
+        Department.name
+    )
+
+    statement = statement.order_by(Department.name)
+    return db.execute(statement).all()

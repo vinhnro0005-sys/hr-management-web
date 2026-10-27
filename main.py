@@ -1,7 +1,9 @@
 import uvicorn
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
+from fastapi.exception_handlers import http_exception_handler
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.config import settings
 from app.modules.auth.auth_router import router as auth_router
@@ -22,6 +24,7 @@ from app.modules.department.department_router import router as department_router
 
 from app.modules.employee.employee_repository import get_employee_by_id
 from app.modules.employee.employee_router import router as employee_router
+from app.modules.employee.csrf import require_csrf
 
 from app.modules.dashboard.dashboard_router import router as dashboard_router
 
@@ -38,11 +41,25 @@ app.add_middleware(
 
 # Đăng ký các router
 app.include_router(auth_router)
-app.include_router(department_router, dependencies=[Depends(require_admin)])
-app.include_router(employee_router, dependencies=[Depends(require_admin)])
+app.include_router(department_router, dependencies=[Depends(require_admin), Depends(require_csrf)])
+app.include_router(employee_router, dependencies=[Depends(require_admin), Depends(require_csrf)])
 app.include_router(dashboard_router)
 
 templates = Jinja2Templates(directory="app/templates")
+
+@app.exception_handler(StarletteHTTPException)
+async def http_not_found(request: Request, exc: StarletteHTTPException):
+    wants_html = "text/html" in request.headers.get("accept", "")
+    if exc.status_code == 404 and wants_html:
+        message = exc.detail if exc.detail != "Not Found" else None
+        return templates.TemplateResponse(
+            request=request,
+            name="errors/404.html",
+            context={"message": message},
+            status_code=404,
+        )
+    return await http_exception_handler(request, exc)
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     route = request.scope.get("route")
@@ -50,7 +67,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     if request.method == "POST" and route_name in ("create_employee", "update_employee"):
         field_names = {
-            "id": "ma nhan vien",
+            "id": "Mã nhân viên",
             "name": "Họ tên",
             "department_id": "Phòng ban",
             "position": "Chức vụ",
@@ -64,20 +81,20 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
         first_error = exc.errors()[0]
         field_name = first_error["loc"][-1]
-        label = field_names.get(field_name, "Du lieu")
+        label = field_names.get(field_name, "Dữ liệu")
         error_type = first_error["type"]
         details = first_error.get("ctx", {})
 
-        error = f"{label} khong hop le"
+        error = f"{label} không hợp lệ"
 
         if error_type == "missing":
-            error = f"{label} ko dc de trong"
+            error = f"{label} không được để trống"
 
         elif error_type == "string_too_short":
-            error = f"{label} khong dc de trong"
+            error = f"{label} không được để trống"
         elif error_type == "string_too_long":
             max_length = details["max_length"]
-            error = f"{label} toi da {max_length} ky tu"
+            error = f"{label} tối đa {max_length} ký tự"
         elif error_type == "value_error":
             error = str(details["error"])
 
@@ -90,6 +107,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 "departments": departments,
                 "error": error,
                 "form_data": form_data,
+                "field_errors": {str(field_name): error},
             }
             if route_name == "create_employee":
                 template_name = "employees/form.html"
@@ -99,7 +117,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
                 if employee is None:
                     return HTMLResponse(
-                        content="khong tim thay nhan vien",
+                        content="Không tìm thấy nhân viên",
                         status_code = 404,
                     )
                 template_name = "employees/edit.html"
@@ -124,15 +142,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             return await request_validation_exception_handler(request, exc)
 
     messages = {
-        "missing": "Ten phong ban khong dc de trong",
-        "string_too_short": "Ten phong ban ko dc de trong",
-        "string_too_long": "ten phong ban toi da 100 ky tu"
+        "missing": "Tên phòng ban không được để trống",
+        "string_too_short": "Tên phòng ban không được để trống",
+        "string_too_long": "Tên phòng ban tối đa 100 ký tự"
     }
 
     first_error = exc.errors()[0]
     error = messages.get(
         first_error["type"],
-        "ten phong ban khong hop le"
+        "Tên phòng ban không hợp lệ"
     )
     form = await request.form()
     entered_name = form.get("name", "")
@@ -150,7 +168,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             department = get_department_by_id(db, department_id)
             if department is None:
                 return HTMLResponse(
-                    content="khong tim thay phong ban",
+                    content="Không tìm thấy phòng ban",
                     status_code = 404,
                 )
             template_name = "departments/edit.html"
@@ -185,10 +203,8 @@ if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
 
 
-# ================= BẮT ĐẦU THAY ĐỔI FRONTEND (21/10/2026) =================
-# Phục vụ CSS, JavaScript và avatar cục bộ cho các trang Jinja2.
-# Đặt cuối file theo yêu cầu của người dùng.
+#FE BO SUNG
 from fastapi.staticfiles import StaticFiles
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-# ================= KẾT THÚC THAY ĐỔI FRONTEND ============================
+

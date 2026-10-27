@@ -1,29 +1,54 @@
 {% extends 'base.html' %}
 {% set page_title = 'Đã tạo nhân viên' %}
+{% set no_snapshot = true %}
 
 {% block description %}
 Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
 {% endblock %}
 
 {% block content %}
-<section class="panel">
-    <h2>Thông tin bàn giao tài khoản</h2>
+<div class="handoff-layout">
+<section class="panel credential-panel" aria-labelledby="credential-title">
+    <div class="credential-heading">
+        <span class="section-marker" aria-hidden="true">{{ icon('key') }}</span>
+        <div>
+            <h2 id="credential-title">Thông tin bàn giao tài khoản</h2>
+            <p>Chỉ hiển thị một lần trên trang này.</p>
+        </div>
+    </div>
 
-    <dl>
-        <dt>Tên đăng nhập</dt>
-        <dd><code>{{ credentials.username }}</code></dd>
-
-        <dt>Mật khẩu ban đầu</dt>
-        <dd><code>{{ credentials.initial_password }}</code></dd>
+    {# Copy buttons are revealed by app.js; without it the values stay selectable for manual copying. #}
+    <dl class="credential-list">
+        <div>
+            <dt id="credential-username-label">Tên đăng nhập</dt>
+            <dd>
+                <code id="credential-username">{{ credentials.username }}</code>
+                <button type="button" class="button button-small button-stack copy-button" data-copy="credential-username" aria-describedby="credential-username-label" hidden>
+                    <span class="button-face">Sao chép</span>
+                    <span class="button-face">Đã sao chép</span>
+                </button>
+            </dd>
+        </div>
+        <div>
+            <dt id="credential-password-label">Mật khẩu ban đầu</dt>
+            <dd>
+                <code id="credential-password">{{ credentials.initial_password }}</code>
+                <button type="button" class="button button-small button-stack copy-button" data-copy="credential-password" aria-describedby="credential-password-label" hidden>
+                    <span class="button-face">Sao chép</span>
+                    <span class="button-face">Đã sao chép</span>
+                </button>
+            </dd>
+        </div>
     </dl>
+    <p class="copy-status" role="status" aria-live="polite"></p>
 
-    <p>
+    <p class="credential-note">
         Hãy bàn giao thông tin này cho đúng nhân viên.
         Mật khẩu không được lưu dạng đọc lại trong hệ thống.
     </p>
 
     <div class="form-actions">
-        <a class="button" href="/employees/{{ employee_id }}">
+        <a class="button" href="/employees/{{ employee_id|urlencode }}">
             Xem hồ sơ
         </a>
 
@@ -32,4 +57,27 @@ Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
         </a>
     </div>
 </section>
+{# Decorative: an account card being handed over. No credential values are drawn here. #}
+<svg class="handoff-art" width="320" height="260" viewBox="0 0 320 260" fill="none" aria-hidden="true">
+    <circle class="ho-halo" cx="160" cy="130" r="112"/>
+    <g class="ho-card">
+        <rect class="la-shadow" x="70" y="72" width="184" height="124" rx="16"/>
+        <rect class="la-card" x="62" y="62" width="184" height="124" rx="16"/>
+        <circle class="la-avatar avatar-tone-1" cx="100" cy="104" r="20"/>
+        <rect class="la-ink-soft" x="132" y="92" width="88" height="8" rx="4"/>
+        <rect class="la-ink-faint" x="132" y="108" width="60" height="6" rx="3"/>
+        <rect class="ho-field" x="82" y="140" width="144" height="12" rx="6"/>
+        <rect class="ho-field" x="82" y="160" width="100" height="12" rx="6"/>
+    </g>
+    <g class="ho-key">
+        <circle class="la-check-bg" cx="236" cy="60" r="24"/>
+        <circle class="ho-key-ink" cx="229" cy="67" r="6"/>
+        <path class="ho-key-ink" d="m233.5 62.5 10-10m-4 4 3 3"/>
+    </g>
+    <g class="ho-check">
+        <circle class="ho-check-bg" cx="70" cy="196" r="18"/>
+        <path class="la-check" d="m62.5 196.5 5 5 9.5-10"/>
+    </g>
+</svg>
+</div>
 {% endblock %}

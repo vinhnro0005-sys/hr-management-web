@@ -33,7 +33,7 @@
             {% else %}
               <tr>
                 <td colspan="3">
-                  <div class="empty-state">{{ icon('building') }}<h3>Chưa có phòng ban</h3>
+                  <div class="empty-state">{{ empty_art('building') }}<h3>Chưa có phòng ban</h3>
                     <p>Thêm phòng ban đầu tiên bằng biểu mẫu bên cạnh.</p>
                   </div>
                 </td>
@@ -47,7 +47,7 @@
       <div class="section-marker">{{ icon('plus') }}</div>
       <h2 id="create-department-title">Thêm phòng ban</h2>
       <p>Tạo phòng ban trước khi gán nhân viên vào tổ chức.</p>
-      <form method="post" action="/departments/create" data-success="Đã thêm phòng ban." data-highlight-field="name">{{ csrf_field() }}<div class="field">
+      <form method="post" action="/departments/create" data-success="Đã thêm phòng ban." data-highlight-field="name" data-loading-text="Đang thêm…">{{ csrf_field() }}<div class="field">
           <label for="name">Tên phòng ban <span class="required">*</span>
           </label>
           <input id="name" name="name" value="{{ entered_name|default('') }}" maxlength="100" required aria-describedby="department-name-hint">

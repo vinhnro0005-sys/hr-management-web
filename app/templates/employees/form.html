@@ -5,10 +5,12 @@
   <a class="text-link" href="/employees">{{ icon('arrow') }} Danh sách nhân viên</a>
 {% endblock %}
 {% block content %}
-  <form class="panel employee-form" method="post" action="/employees/create" data-success="Đã thêm nhân viên." data-highlight-field="id">
+  {# Success renders the credential hand-off, which refuses view-transition snapshots: data-no-transition skips the outgoing one. #}
+  <form class="panel employee-form" method="post" action="/employees/create" data-loading-text="Đang thêm…" data-no-transition>
     {{ csrf_field() }}
     {% include 'employees/fields.html' %}
     <div class="form-actions">
+      <p class="form-note">Trường có dấu <span class="required">*</span> là bắt buộc.</p>
       <a class="button" href="/employees">Hủy</a>
       <button class="button button-primary" type="submit">Thêm nhân viên</button>
     </div>

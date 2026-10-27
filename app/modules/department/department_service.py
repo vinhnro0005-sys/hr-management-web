@@ -14,7 +14,7 @@ from app.modules.department.department_schemas import (
 def create_department(db: Session, data: DepartmentCreate):
     existing_department = get_department_by_name(db, data.name)
     if existing_department:
-        return "Ten phong ban da ton tai"
+        return "Tên phòng ban đã tồn tại"
 
     add_department(db, data.name)
     db.commit()
@@ -29,7 +29,7 @@ def update_department(
     existing_department = get_department_by_name(db, data.name)
     if existing_department:
         if existing_department.id != department.id:
-            return "Ten phong ban da ton tai"
+            return "Tên phòng ban đã tồn tại"
 
     update_department_name(department, data.name)
     db.commit()

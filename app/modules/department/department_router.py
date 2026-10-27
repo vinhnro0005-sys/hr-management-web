@@ -71,7 +71,7 @@ def update_department(request: Request, department_id: int, data: DepartmentUpda
         if department is None:
             raise HTTPException(
                 status_code = 404,
-                detail = "Không tìm thấy phong ban"
+                detail = "Không tìm thấy phòng ban"
             )
         error = department_service.update_department(db, department, data)
         if error:

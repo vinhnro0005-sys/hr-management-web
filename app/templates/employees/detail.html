@@ -2,8 +2,8 @@
 {% set page_title = 'Hồ sơ nhân viên' %}
 {% block description %}Thông tin cá nhân và công việc của nhân viên.{% endblock %}
 {% block actions %}
-  <a class="button" href="/employees">{{ icon('arrow') }} Danh sách</a>
-  <a class="button button-primary" href="/employees/{{ employee.id|urlencode }}/edit">{{ icon('edit') }} Sửa thông tin</a>
+  <a class="button" href="/employees{{ list_query() }}">{{ icon('arrow') }} Danh sách</a>
+  <a class="button button-primary" href="/employees/{{ employee.id|urlencode }}/edit{{ list_query() }}">{{ icon('edit') }} Sửa thông tin</a>
 {% endblock %}
 {% block content %}
   {% include 'employees/info.html' %}
@@ -15,7 +15,7 @@
       </p>
     </div>
     {% if employee.status == 'Active' %}
-      <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-success="Đã chuyển nhân viên sang ngừng hoạt động." data-confirm-title="Ngừng hoạt động nhân viên?" data-confirm="Ngừng hoạt động nhân viên {{ employee.name }} ({{ employee.id }})? Hồ sơ sẽ được giữ lại.">{{ csrf_field() }}<button type="submit" class="button button-danger">Ngừng hoạt động</button>
+      <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-success="Đã chuyển nhân viên sang ngừng hoạt động." data-loading-text="Đang xử lý…" data-confirm-title="Ngừng hoạt động hồ sơ nhân viên" data-confirm="Hồ sơ {{ employee.name }} ({{ employee.id }}) sẽ chuyển sang ngừng hoạt động. Hồ sơ và lịch sử vẫn được giữ lại.">{{ csrf_field() }}<input type="hidden" name="return_query" value="{{ list_query()[1:] }}"><button type="submit" class="button button-danger">Ngừng hoạt động</button>
       </form>
     {% endif %}
   </section>
