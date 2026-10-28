@@ -16,7 +16,7 @@
 ![UI](https://img.shields.io/badge/UI-HTML%20%2B%20CSS%20%2B%20JS%20thu%E1%BA%A7n-0F766E)
 ![Dark mode](https://img.shields.io/badge/Dark%20mode-c%C3%B3-111726)
 
-[Tính năng](#-tính-năng) · [Kiến trúc](#-kiến-trúc) · [Cài đặt](#-cài-đặt-và-chạy) · [Các trang](#-các-trang-chính) · [Kiểm thử](#-kiểm-thử)
+[Tính năng](#-tính-năng) · [Giao diện](#-giao-diện) · [Kiến trúc](#-kiến-trúc) · [Cài đặt](#-cài-đặt-và-chạy) · [Các trang](#-các-trang-chính) · [Kiểm thử](#-kiểm-thử)
 
 </div>
 
@@ -41,35 +41,29 @@
 - ⚡ Nút có trạng thái đang xử lý, toast thông báo, hộp thoại xác nhận, báo lỗi ngay dưới từng ô nhập.
 - ♿ Dùng tốt bằng bàn phím và trình đọc màn hình (skip link, `aria-*`, viền focus rõ); tôn trọng `prefers-reduced-motion`.
 
-<!--
-  Ảnh chụp màn hình: kéo 4 ảnh vào ô bình luận của một issue trên GitHub để lấy link
-  dạng https://github.com/user-attachments/assets/..., thay vào các chỗ LINK_ANH_* bên dưới,
-  rồi xoá dòng mở comment phía trên và dòng đóng comment phía dưới khối này.
-
 ## 📸 Giao diện
 
 <p align="center">
-  <img src="LINK_ANH_PREVIEW_GRID" alt="Đăng nhập, tổng quan, danh sách nhân viên và hồ sơ nhân viên" width="100%">
+  <img src="docs/images/preview-grid.jpg" alt="Đăng nhập, tổng quan, danh sách nhân viên và hồ sơ nhân viên" width="100%">
 </p>
 
 <details>
 <summary><b>🌗 Giao diện sáng và tối</b></summary>
 <br>
-<img src="LINK_ANH_LIGHT_DARK" alt="Trang tổng quan ở giao diện sáng và tối" width="100%">
+<img src="docs/images/light-dark.jpg" alt="Trang tổng quan ở giao diện sáng và tối" width="100%">
 </details>
 
 <details>
 <summary><b>🔑 Bàn giao tài khoản và nhân viên tự sửa hồ sơ</b></summary>
 <br>
-<img src="LINK_ANH_FLOWS" alt="Trang bàn giao tài khoản và trang tự sửa hồ sơ" width="100%">
+<img src="docs/images/flows.jpg" alt="Trang bàn giao tài khoản và trang tự sửa hồ sơ" width="100%">
 </details>
 
 <details>
 <summary><b>📱 Trên điện thoại</b></summary>
 <br>
-<p align="center"><img src="LINK_ANH_MOBILE" alt="Danh sách nhân viên và menu trên điện thoại" width="520"></p>
+<p align="center"><img src="docs/images/mobile.jpg" alt="Danh sách nhân viên và menu trên điện thoại" width="520"></p>
 </details>
--->
 
 ## 🧱 Kiến trúc
 
@@ -166,6 +160,7 @@ hr-management-web/
 ├── seed.py                 # Tạo bảng + phòng ban, nhân viên, tài khoản mẫu
 ├── requirements.txt
 ├── .env.example            # Mẫu cấu hình
+├── docs/images/            # Ảnh chụp màn hình dùng trong README
 ├── app/
 │   ├── config.py           # Đọc cấu hình từ .env
 │   ├── database.py         # Engine + SessionLocal
