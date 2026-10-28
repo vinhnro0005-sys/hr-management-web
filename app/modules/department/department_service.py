@@ -2,14 +2,12 @@ from sqlalchemy.orm import Session
 
 from app.modules.department.department_models import Department
 from app.modules.department.department_repository import (
-    get_department_by_name,
     add_department,
-    update_department_name
+    get_department_by_name,
+    update_department_name,
 )
-from app.modules.department.department_schemas import (
-    DepartmentCreate,
-    DepartmentUpdate
-)
+from app.modules.department.department_schemas import DepartmentCreate, DepartmentUpdate
+
 
 def create_department(db: Session, data: DepartmentCreate):
     existing_department = get_department_by_name(db, data.name)
@@ -20,6 +18,7 @@ def create_department(db: Session, data: DepartmentCreate):
     db.commit()
 
     return None
+
 
 def update_department(
         db: Session,

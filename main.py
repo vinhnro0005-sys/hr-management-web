@@ -1,32 +1,29 @@
 import uvicorn
 from fastapi import Depends, FastAPI, Request
-from fastapi.responses import RedirectResponse
-from fastapi.exception_handlers import http_exception_handler
-from starlette.middleware.sessions import SessionMiddleware
+from fastapi.exception_handlers import (
+    http_exception_handler,
+    request_validation_exception_handler,
+)
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
+from app.database import SessionLocal
 from app.modules.auth.auth_router import router as auth_router
 from app.modules.auth.dependencies import get_optional_current_user, require_admin
-from fastapi.exceptions import RequestValidationError
-from fastapi.exception_handlers import request_validation_exception_handler
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-
-from app.database import SessionLocal
-
+from app.modules.dashboard.dashboard_router import router as dashboard_router
 from app.modules.department.department_repository import (
     get_all_departments,
     get_department_by_id,
 )
 from app.modules.department.department_router import router as department_router
-
-
+from app.modules.employee.csrf import require_csrf
 from app.modules.employee.employee_repository import get_employee_by_id
 from app.modules.employee.employee_router import router as employee_router
-from app.modules.employee.csrf import require_csrf
-
-from app.modules.dashboard.dashboard_router import router as dashboard_router
 
 app = FastAPI(title="HR Management System")
 
@@ -45,7 +42,10 @@ app.include_router(department_router, dependencies=[Depends(require_admin), Depe
 app.include_router(employee_router, dependencies=[Depends(require_admin), Depends(require_csrf)])
 app.include_router(dashboard_router)
 
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 templates = Jinja2Templates(directory="app/templates")
+
 
 @app.exception_handler(StarletteHTTPException)
 async def http_not_found(request: Request, exc: StarletteHTTPException):
@@ -59,6 +59,7 @@ async def http_not_found(request: Request, exc: StarletteHTTPException):
             status_code=404,
         )
     return await http_exception_handler(request, exc)
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -125,7 +126,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 if employee is None:
                     return HTMLResponse(
                         content="Không tìm thấy nhân viên",
-                        status_code = 404,
+                        status_code=404,
                     )
                 template_name = "employees/edit.html"
                 context["employee"] = employee
@@ -133,7 +134,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 request=request,
                 name=template_name,
                 context=context,
-                status_code = 400
+                status_code=400
             )
 
     is_department_form = (
@@ -176,7 +177,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             if department is None:
                 return HTMLResponse(
                     content="Không tìm thấy phòng ban",
-                    status_code = 404,
+                    status_code=404,
                 )
             template_name = "departments/edit.html"
             context["department"] = department
@@ -186,6 +187,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             context=context,
             status_code=400,
         )
+
 
 @app.get("/")
 def home(request: Request):
@@ -205,13 +207,6 @@ def about():
     }
 
 
-# ----CHAY BANG UVICORN----
+# Chạy trực tiếp: python main.py
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
-
-
-#FE BO SUNG
-from fastapi.staticfiles import StaticFiles
-
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-

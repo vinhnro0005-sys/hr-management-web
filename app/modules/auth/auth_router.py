@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-
 from pydantic import BaseModel, ValidationError
 
 from app.database import SessionLocal

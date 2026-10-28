@@ -1,34 +1,28 @@
+import secrets
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-#import phong ban
+from app.models.user import User
+from app.modules.auth.auth_service import AuthService
+from app.modules.auth.security import hash_password
 from app.modules.department.department_repository import (
     get_all_departments,
     get_department_by_id,
 )
-
-
-#import nhan vien
 from app.modules.employee.employee_models import Employee
+from app.modules.employee.employee_repository import (
+    add_employee,
+    get_employee_by_email,
+    get_employee_by_id,
+    get_employee_position,
+    search_employees,
+    update_employee_fields,
+)
 from app.modules.employee.employee_schemas import (
     EmployeeCreate,
     EmployeeUpdate,
 )
-from app.modules.employee.employee_repository import (
-    get_employee_position,
-    search_employees,
-    get_employee_by_id,
-    get_employee_by_email,
-    add_employee,
-    update_employee_fields,
-)
-
-import secrets
-from app.models.user import User
-from app.modules.auth.auth_service import AuthService
-from app.modules.auth.security import hash_password
-
-
 
 
 def get_employee_list_data(
@@ -142,6 +136,7 @@ def create_employee(db: Session, data: EmployeeCreate):
     }
     return credentials, None
 
+
 def get_employee_detail_data(db: Session, employee_id: str):
     employee = get_employee_by_id(db, employee_id)
 
@@ -159,6 +154,7 @@ def get_employee_detail_data(db: Session, employee_id: str):
         "employee": employee,
         "department": department,
     }
+
 
 def update_employee(
         db: Session,
@@ -180,6 +176,7 @@ def update_employee(
     update_employee_fields(employee, values)
     db.commit()
     return None
+
 
 def get_employee_edit_data(db: Session, employee_id: str):
     employee = get_employee_by_id(db, employee_id)
@@ -218,13 +215,14 @@ def get_employee_edit_data(db: Session, employee_id: str):
         "form_data": form_data,
     }
 
+
 def deactive_employee(db: Session, employee_id: str):
     employee = get_employee_by_id(db, employee_id)
 
     if employee is None:
         raise HTTPException(
             status_code=404,
-            detail = "Không tìm thấy nhân viên",
+            detail="Không tìm thấy nhân viên",
         )
     if employee.status == "Inactive":
         return

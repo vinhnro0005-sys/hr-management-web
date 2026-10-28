@@ -1,9 +1,8 @@
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.modules.employee.employee_models import Employee
 from app.modules.department.department_models import Department
-
+from app.modules.employee.employee_models import Employee
 
 
 def get_employee_position(db: Session):
@@ -18,6 +17,7 @@ def get_employee_position(db: Session):
     positions = db.scalars(statement).all()
 
     return positions
+
 
 def search_employees(
         db: Session,
@@ -60,6 +60,7 @@ def get_employee_by_id(
 ):
     return db.get(Employee, employee_id)
 
+
 def get_employee_by_email(
         db: Session,
         email: str
@@ -67,8 +68,10 @@ def get_employee_by_email(
     statement = select(Employee).where(Employee.email == email)
     return db.scalar(statement)
 
+
 def add_employee(db: Session, employee: Employee):
     db.add(employee)
+
 
 def update_employee_fields(employee: Employee, values: dict):
     for field_name, value in values.items():

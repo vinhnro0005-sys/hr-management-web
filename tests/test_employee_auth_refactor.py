@@ -10,6 +10,7 @@ def test_employee_auth_refactor():
     test_auth_full_flow()
 
     from fastapi.testclient import TestClient
+
     from app.database import SessionLocal
     from app.models.employee import Employee
     from app.modules.employee.employee_models import Employee as ModuleEmployee

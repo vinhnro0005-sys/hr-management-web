@@ -62,7 +62,7 @@
 </svg>
 {%- endmacro %}
 
-{# Server-side error for one field (B01). Renders nothing until the backend passes `field_errors`. #}
+{# Server-side error for one field. Renders nothing when the route passes no `field_errors`. #}
 {% macro field_error(name) -%}
 {%- set message = field_errors.get(name) if field_errors is defined and field_errors else '' -%}
 {%- if message %}<small class="field-error" id="{{ name }}-error">{{ icon('alert') }}<span>{{ message }}</span></small>{% endif -%}

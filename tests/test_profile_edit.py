@@ -13,6 +13,7 @@ def test_profile_edit():
     test_auth_full_flow()
 
     from fastapi.testclient import TestClient
+
     from app.database import SessionLocal
     from app.models import Department, Employee
     from main import app
