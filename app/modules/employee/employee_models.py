@@ -1,7 +1,10 @@
 from datetime import date
+
 from sqlalchemy import Date, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.database import Base
+
 
 class Employee(Base):
     __tablename__ = "employees"

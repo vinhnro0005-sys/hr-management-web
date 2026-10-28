@@ -1,11 +1,8 @@
 import re
-
-
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, ValidationInfo
-
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 
 
 class EmployeeBase(BaseModel):
@@ -36,7 +33,6 @@ class EmployeeBase(BaseModel):
         mode="before"
     )
     @classmethod
-
     def empty_value_to_none(cls, value):
         if isinstance(value, str):
             value = value.strip()
@@ -45,8 +41,7 @@ class EmployeeBase(BaseModel):
                 return None
         return value
 
-
-    #check xem email dung dinh dang ko
+    # Email phải có dạng ten@mien.tld
     @field_validator("email")
     @classmethod
     def validate_email(cls, value: str | None):
@@ -59,7 +54,7 @@ class EmployeeBase(BaseModel):
             raise ValueError("Email không đúng định dạng")
         return value
 
-    #check xem ngay sinh co hop ly ko
+    # Ngày sinh không được nằm trong tương lai
     @field_validator("birthday")
     @classmethod
     def validate_birthday(cls, value: str | None):
@@ -68,7 +63,7 @@ class EmployeeBase(BaseModel):
                 raise ValueError("Ngày sinh không được nằm trong tương lai")
         return value
 
-    #check xem ngay vao lam co hop ly
+    # Ngày vào làm không được trước ngày sinh
     @field_validator("start_date")
     @classmethod
     def validate_start_date(cls, value: str | None, info: ValidationInfo):
@@ -79,8 +74,10 @@ class EmployeeBase(BaseModel):
                 raise ValueError("Ngày vào làm không được trước ngày sinh")
         return value
 
+
 class EmployeeCreate(EmployeeBase):
     id: str = Field(min_length=1, max_length=20)
+
 
 class EmployeeUpdate(EmployeeBase):
     pass

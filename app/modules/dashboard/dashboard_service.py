@@ -1,9 +1,11 @@
 from sqlalchemy.orm import Session
+
 from app.modules.dashboard.dashboard_repository import (
-        get_employee_totals,
-        count_departments,
-        count_employees_by_department,
+    count_departments,
+    count_employees_by_department,
+    get_employee_totals,
 )
+
 
 def get_dashboard_data(db: Session):
     totals = get_employee_totals(db)

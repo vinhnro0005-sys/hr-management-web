@@ -1,5 +1,4 @@
-/* Adapted from the reference's teal/mint, navy and amber palette.
-   Only server-rendered Employee, Department and Profile screens are styled. */
+/* Teal/mint, navy and amber palette for the server-rendered Employee, Department, Dashboard and Profile screens. */
 :root {
   color-scheme: light;
   --canvas: #f3f5f7;

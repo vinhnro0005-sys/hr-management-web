@@ -1,33 +1,30 @@
-from fastapi import APIRouter, Request, Form, HTTPException
+from urllib.parse import parse_qsl, urlencode
+
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-
 from pydantic import BaseModel
 
 from app.database import SessionLocal
-
-from urllib.parse import parse_qsl, urlencode
-from fastapi import Depends
-#import nhan vien
+from app.modules.department.department_repository import (
+    get_all_departments,
+)
 from app.modules.employee import employee_service
+from app.modules.employee.employee_repository import get_employee_by_id
 from app.modules.employee.employee_schemas import (
     EmployeeCreate,
     EmployeeUpdate,
 )
-from app.modules.employee.employee_repository import get_employee_by_id
-
-
-#import phong ban
-from app.modules.department.department_repository import (
-    get_all_departments,
-)
 
 LIST_FILTERS = ("q", "department_id", "position", "status")
+
+
 async def get_return_query(request: Request) -> str:
     form = await request.form()
     pairs = [(k, v) for k, v in parse_qsl(str(form.get("return_query", "")))
              if k in LIST_FILTERS and v]
     return urlencode(pairs)
+
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -42,7 +39,6 @@ def prepare_form_data(data: BaseModel):
     return form_data
 
 
-##-------EMPLOYEES----------
 @router.get("/employees")
 def list_employees(request: Request,
                    q: str = "",
@@ -66,7 +62,6 @@ def list_employees(request: Request,
         )
 
 
-#------tung nhan vien 1
 @router.get("/employees/create")
 def create_employee_form(request: Request):
     with SessionLocal() as db:
@@ -79,6 +74,7 @@ def create_employee_form(request: Request):
                 "form_data": {},
             }
         )
+
 
 @router.post("/employees/create")
 def create_employee(
@@ -128,6 +124,7 @@ def employee_detail(request: Request, employee_id: str):
             context=context,
         )
 
+
 @router.get("/employees/{employee_id}/edit")
 def edit_employee_form(request: Request, employee_id: str):
     with SessionLocal() as db:
@@ -142,6 +139,7 @@ def edit_employee_form(request: Request, employee_id: str):
             context=context,
         )
 
+
 @router.post("/employees/{employee_id}/edit")
 def update_employee(
         request: Request,
@@ -154,11 +152,10 @@ def update_employee(
         employee = get_employee_by_id(db, employee_id)
         if employee is None:
             raise HTTPException(
-                status_code = 404,
+                status_code=404,
                 detail="Không tìm thấy nhân viên"
             )
         error = employee_service.update_employee(db, employee, data)
-
 
         if error is not None:
             form_data = prepare_form_data(data)
@@ -174,14 +171,15 @@ def update_employee(
                     "field_errors": {error["field"]: error["message"]},
                     "form_data": form_data
                 },
-                status_code = 400
+                status_code=400
             )
 
     suffix = f"?{return_query}" if return_query else ""
     return RedirectResponse(
-        url = f"/employees/{employee_id}{suffix}",
-        status_code = 303
+        url=f"/employees/{employee_id}{suffix}",
+        status_code=303
     )
+
 
 @router.post("/employees/{employee_id}/deactivate")
 def deactivate_employee(employee_id: str, return_query: str = Depends(get_return_query)):
@@ -189,6 +187,6 @@ def deactivate_employee(employee_id: str, return_query: str = Depends(get_return
         employee_service.deactive_employee(db, employee_id)
     suffix = f"?{return_query}" if return_query else ""
     return RedirectResponse(
-        url = f"/employees/{employee_id}{suffix}",
-        status_code = 303
+        url=f"/employees/{employee_id}{suffix}",
+        status_code=303
     )
