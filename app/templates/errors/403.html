@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{# Context: message (the reason from the HTTPException), user (who is signed in, so the sidebar shows their own role). #}
+{% set page_title = 'Không có quyền truy cập' %}
+{% set error_page = true %}
+{% set error_icon = 'lock' %}
+{% block eyebrow %}<p class="eyebrow">Lỗi 403</p>{% endblock %}
+{% block content %}
+  <section class="panel empty-state not-found">
+    {{ chip('lock', 'amber') }}
+    <h3>{{ message or 'Bạn không có quyền dùng chức năng này.' }}</h3>
+    <p>Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ quản trị viên.</p>
+    <div class="heading-actions not-found-actions">
+      <a class="button button-primary" href="/">Về trang chính</a>
+    </div>
+  </section>
+{% endblock %}

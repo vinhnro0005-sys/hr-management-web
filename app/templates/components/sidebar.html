@@ -16,16 +16,16 @@
   <nav aria-label="Chức năng">
     {% if is_admin %}
       {% set on_dashboard = path == '/dashboard' %}
-      <a class="nav-item" href="/dashboard"{% if on_dashboard %} aria-current="page"{% endif %}>{% if on_dashboard %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('dashboard') }}<span>Tổng quan</span>
+      <a class="nav-item tone-teal" href="/dashboard"{% if on_dashboard %} aria-current="page"{% endif %}>{% if on_dashboard %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('dashboard') }}<span>Tổng quan</span>
       </a>
       {% set on_employees = path.startswith('/employees') %}
       {% set on_departments = path.startswith('/departments') %}
-      <a class="nav-item" href="/employees"{% if on_employees %} aria-current="page"{% endif %}>{% if on_employees %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('people') }}<span>Nhân viên</span>
+      <a class="nav-item tone-blue" href="/employees"{% if on_employees %} aria-current="page"{% endif %}>{% if on_employees %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('people') }}<span>Nhân viên</span>
       </a>
-      <a class="nav-item" href="/departments"{% if on_departments %} aria-current="page"{% endif %}>{% if on_departments %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('building') }}<span>Phòng ban</span>
+      <a class="nav-item tone-indigo" href="/departments"{% if on_departments %} aria-current="page"{% endif %}>{% if on_departments %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('building') }}<span>Phòng ban</span>
       </a>
     {% endif %}
-    <a class="nav-item" href="/profile"{% if path == '/profile' %} aria-current="page"{% endif %}>{% if path == '/profile' %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('person') }}<span>Hồ sơ cá nhân</span>
+    <a class="nav-item tone-rose" href="/profile"{% if path == '/profile' %} aria-current="page"{% endif %}>{% if path == '/profile' %}<span class="nav-pill" aria-hidden="true"><span class="nav-bar"></span></span>{% endif %}{{ icon('person') }}<span>Hồ sơ cá nhân</span>
     </a>
   </nav>
   {# Not every route passes `user`, so the card shows the role (known from the section) rather than a username. #}

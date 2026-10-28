@@ -12,7 +12,7 @@
     <div class="form-actions">
       <p class="form-note">Trường có dấu <span class="required">*</span> là bắt buộc.</p>
       <a class="button" href="/employees/{{ employee.id|urlencode }}{{ list_query() }}">Hủy</a>
-      <button class="button button-primary" type="submit">Lưu thay đổi</button>
+      <button class="button button-primary" type="submit">{{ icon('save') }} Lưu thay đổi</button>
     </div>
   </form>
 {% endblock %}

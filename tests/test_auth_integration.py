@@ -14,19 +14,22 @@ from app.database import Base
 from app.models import Department, Employee
 from app.modules.auth.auth_service import AuthService
 
+# One in-memory SQLite engine for the whole test run, patched in before any router imports SessionLocal.
+# Routers bind SessionLocal at import time, so swapping in a new engine per test would leave the app on the old one.
+test_engine = create_engine(
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestSession = sessionmaker(bind=test_engine)
+app.database.engine = test_engine
+app.database.SessionLocal = TestSession
+
 
 def test_auth_full_flow():
-    # Use in-memory SQLite for testing
-    test_engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    # Fresh tables on every call, same engine.
+    Base.metadata.drop_all(bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
-    TestSession = sessionmaker(bind=test_engine)
-
-    app.database.engine = test_engine
-    app.database.SessionLocal = TestSession
 
     from main import app as test_app
 

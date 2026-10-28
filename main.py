@@ -55,8 +55,15 @@ async def http_not_found(request: Request, exc: StarletteHTTPException):
         return templates.TemplateResponse(
             request=request,
             name="errors/404.html",
-            context={"message": message},
+            context={"message": message, "user": get_optional_current_user(request)},
             status_code=404,
+        )
+    if exc.status_code == 403 and wants_html:
+        return templates.TemplateResponse(
+            request=request,
+            name="errors/403.html",
+            context={"message": exc.detail, "user": get_optional_current_user(request)},
+            status_code=403,
         )
     return await http_exception_handler(request, exc)
 
