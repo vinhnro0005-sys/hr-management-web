@@ -18,22 +18,22 @@
     <section class="dash-band" aria-label="Số liệu chính">
       <div class="kpi-grid">
         <a class="kpi" href="/employees">
-          <span class="kpi-label">Tổng nhân viên {{ icon('chevron') }}</span>
+          <span class="kpi-label">{{ chip('people', 'blue') }}Tổng nhân viên {{ icon('chevron') }}</span>
           <strong class="kpi-value">{{ total }}</strong>
           <span class="kpi-note">Tất cả hồ sơ, mọi trạng thái</span>
         </a>
         <a class="kpi" href="/employees?status=Active">
-          <span class="kpi-label"><span class="legend-dot dot-active" aria-hidden="true"></span>Đang hoạt động {{ icon('chevron') }}</span>
+          <span class="kpi-label">{{ chip('user-check', 'teal') }}Đang hoạt động {{ icon('chevron') }}</span>
           <strong class="kpi-value">{{ active_employees }}</strong>
           <span class="kpi-note">{{ percent(active_employees) }} tổng hồ sơ</span>
         </a>
         <a class="kpi" href="/employees?status=Inactive">
-          <span class="kpi-label"><span class="legend-dot dot-inactive" aria-hidden="true"></span>Ngừng hoạt động {{ icon('chevron') }}</span>
+          <span class="kpi-label">{{ chip('user-x', 'amber') }}Ngừng hoạt động {{ icon('chevron') }}</span>
           <strong class="kpi-value">{{ inactive_employees }}</strong>
           <span class="kpi-note">{{ percent(inactive_employees) }} tổng hồ sơ</span>
         </a>
         <a class="kpi" href="/departments">
-          <span class="kpi-label">Phòng ban {{ icon('chevron') }}</span>
+          <span class="kpi-label">{{ chip('building', 'indigo') }}Phòng ban {{ icon('chevron') }}</span>
           <strong class="kpi-value">{{ total_departments }}</strong>
           <span class="kpi-note">Kể cả phòng chưa có nhân viên</span>
         </a>

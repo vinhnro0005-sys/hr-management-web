@@ -10,34 +10,34 @@
   <div class="profile-sections">
     <section>
       <h3>Liên hệ</h3>
-      <dl class="info-grid">
+      <dl class="info-grid info-grid-icons">
         <div>
-          <dt>Điện thoại</dt>
+          <dt>{{ chip('phone', 'green') }}Điện thoại</dt>
           <dd>{{ employee.phone or 'Chưa cập nhật' }}</dd>
         </div>
         <div>
-          <dt>Email</dt>
+          <dt>{{ chip('mail', 'blue') }}Email</dt>
           <dd>{{ employee.email or 'Chưa cập nhật' }}</dd>
         </div>
         <div class="field-wide">
-          <dt>Địa chỉ</dt>
+          <dt>{{ chip('map-pin', 'rose') }}Địa chỉ</dt>
           <dd>{{ employee.address or 'Chưa cập nhật' }}</dd>
         </div>
       </dl>
     </section>
     <section>
       <h3>Cá nhân và công việc</h3>
-      <dl class="info-grid">
+      <dl class="info-grid info-grid-icons">
         <div>
-          <dt>Ngày sinh</dt>
+          <dt>{{ chip('cake', 'amber') }}Ngày sinh</dt>
           <dd>{{ employee.birthday.strftime('%d/%m/%Y') if employee.birthday else 'Chưa cập nhật' }}</dd>
         </div>
         <div>
-          <dt>Giới tính</dt>
+          <dt>{{ chip('gender', 'indigo') }}Giới tính</dt>
           <dd>{{ employee.gender or 'Chưa cập nhật' }}</dd>
         </div>
         <div>
-          <dt>Ngày vào làm</dt>
+          <dt>{{ chip('briefcase', 'teal') }}Ngày vào làm</dt>
           <dd>{{ employee.start_date.strftime('%d/%m/%Y') if employee.start_date else 'Chưa cập nhật' }}</dd>
         </div>
       </dl>

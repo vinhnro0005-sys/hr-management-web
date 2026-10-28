@@ -24,8 +24,8 @@ Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
             <dd>
                 <code id="credential-username">{{ credentials.username }}</code>
                 <button type="button" class="button button-small button-stack copy-button" data-copy="credential-username" aria-describedby="credential-username-label" hidden>
-                    <span class="button-face">Sao chép</span>
-                    <span class="button-face">Đã sao chép</span>
+                    <span class="button-face">{{ icon('copy') }} Sao chép</span>
+                    <span class="button-face">{{ icon('check') }} Đã sao chép</span>
                 </button>
             </dd>
         </div>
@@ -34,8 +34,8 @@ Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
             <dd>
                 <code id="credential-password">{{ credentials.initial_password }}</code>
                 <button type="button" class="button button-small button-stack copy-button" data-copy="credential-password" aria-describedby="credential-password-label" hidden>
-                    <span class="button-face">Sao chép</span>
-                    <span class="button-face">Đã sao chép</span>
+                    <span class="button-face">{{ icon('copy') }} Sao chép</span>
+                    <span class="button-face">{{ icon('check') }} Đã sao chép</span>
                 </button>
             </dd>
         </div>

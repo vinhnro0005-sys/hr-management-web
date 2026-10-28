@@ -2,12 +2,12 @@
 
 import re
 
-from test_auth_integration import test_auth_full_flow
+from test_auth_integration import test_auth_full_flow as reset_and_check_auth
 
 
 def test_employee_auth_refactor():
     # Bộ test B khởi tạo DB thử và gắn SessionLocal trước khi import ứng dụng.
-    test_auth_full_flow()
+    reset_and_check_auth()
 
     from fastapi.testclient import TestClient
     from app.database import SessionLocal

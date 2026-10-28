@@ -20,8 +20,26 @@
 {% elif name == 'key' %}<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9m-4 4 3 3"/>
 {% elif name == 'lock' %}<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
 {% elif name == 'check' %}<path d="M20 6 9 17l-5-5"/>
+{# Below: Lucide icons (lucide.dev, ISC licence), same 24px stroke grid as the set above. #}
+{% elif name == 'phone' %}<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92Z"/>
+{% elif name == 'mail' %}<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+{% elif name == 'map-pin' %}<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+{% elif name == 'cake' %}<path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1M2 21h20M7 8v3M12 8v3M17 8v3M7 4h.01M12 4h.01M17 4h.01"/>
+{% elif name == 'gender' %}<path d="M10 20h4M12 16v6M17 2h4v4M21 2l-5.46 5.46"/><circle cx="12" cy="11" r="5"/>
+{% elif name == 'briefcase' %}<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect x="2" y="6" width="20" height="14" rx="2"/>
+{% elif name == 'user-check' %}<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M16 11l2 2 4-4"/><circle cx="9" cy="7" r="4"/>
+{% elif name == 'user-x' %}<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M17 8l5 5M22 8l-5 5"/><circle cx="9" cy="7" r="4"/>
+{% elif name == 'user-plus' %}<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M19 8v6M22 11h-6"/><circle cx="9" cy="7" r="4"/>
+{% elif name == 'save' %}<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2ZM17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7M7 3v4a1 1 0 0 0 1 1h7"/>
+{% elif name == 'copy' %}<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+{% elif name == 'login' %}<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
 {% endif %}</svg>
 {%- endif %}
+{%- endmacro %}
+
+{# An icon on a soft tinted tile; `tone` is one of the six shared tones (teal, blue, indigo, amber, rose, green). #}
+{% macro chip(name, tone) -%}
+<span class="icon-chip tone-{{ tone }}" aria-hidden="true">{{ icon(name) }}</span>
 {%- endmacro %}
 
 {# Initials of the first and last word of the name, on one of six tones picked from the employee code,

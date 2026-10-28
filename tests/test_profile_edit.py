@@ -2,7 +2,7 @@
 
 import re
 
-from test_auth_integration import test_auth_full_flow
+from test_auth_integration import test_auth_full_flow as reset_and_check_auth
 
 
 def _csrf(text):
@@ -10,7 +10,7 @@ def _csrf(text):
 
 
 def test_profile_edit():
-    test_auth_full_flow()
+    reset_and_check_auth()
 
     from fastapi.testclient import TestClient
     from app.database import SessionLocal
