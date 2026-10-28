@@ -82,7 +82,7 @@ flowchart LR
     T -- "HTML" --> B
 ```
 
-Mỗi module trong `app/modules/` chia theo lớp: **router** (nhận request, chọn template) → **service** (nghiệp vụ, kiểm tra trùng lặp) → **repository** (truy vấn CSDL). Dữ liệu form được kiểm tra bằng **Pydantic** trước khi vào service.
+Các module `employee`, `department`, `dashboard` chia theo lớp: **router** (nhận request, chọn template) → **service** (nghiệp vụ, kiểm tra trùng lặp) → **repository** (truy vấn CSDL). Module `auth` gồm router, service và các dependency phân quyền. Dữ liệu form được kiểm tra bằng **Pydantic** trước khi vào service.
 
 <details>
 <summary><b>🔄 Luồng thêm nhân viên và tự tạo tài khoản</b></summary>
@@ -112,7 +112,7 @@ sequenceDiagram
 ```mermaid
 erDiagram
     DEPARTMENTS ||--o{ EMPLOYEES : "gồm"
-    EMPLOYEES ||--o| USERS : "đăng nhập bằng"
+    EMPLOYEES |o--o| USERS : "đăng nhập bằng"
     DEPARTMENTS {
         int id PK
         string name UK "tối đa 100 ký tự"
@@ -291,16 +291,12 @@ python tests/test_profile_edit.py
 
 Mỗi script chạy luôn cả bài test đăng nhập và phân quyền trong `tests/test_auth_integration.py`.
 
-## 📌 Lộ trình
+## ✅ Phạm vi dự án
+
+Dự án gồm các chức năng sau, tất cả đã hoàn thành:
 
 - [x] Đăng nhập, phân quyền quản trị viên / nhân viên
 - [x] Quản lý nhân viên, phòng ban; tìm kiếm và lọc
 - [x] Trang tổng quan thống kê
 - [x] Tự tạo tài khoản khi thêm nhân viên, đổi mật khẩu, tự sửa hồ sơ
 - [x] Giao diện sáng/tối, responsive
-- [ ] Đặt lại mật khẩu cho nhân viên, kích hoạt lại hồ sơ
-- [ ] Phân trang danh sách, xuất Excel
-- [ ] Chấm công, tính lương
-- [ ] Migration bằng Alembic
-
-Kế hoạch chi tiết: [`PLAN_FASTAPI_MYSQL.md`](PLAN_FASTAPI_MYSQL.md).
