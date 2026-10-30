@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+from app.core.email import send_email
 from app.database import SessionLocal
 from app.modules.department.department_repository import (
     get_all_departments,
@@ -99,6 +100,18 @@ def create_employee(
                 },
                 status_code=400
             )
+
+    if data.email:
+        send_email(
+            to_email=data.email,
+            subject="Tài khoản nhân sự đã được tạo",
+            template_name="emails/welcome_account.html",
+            context={
+                "name": data.name,
+                "username": credentials["username"],
+                "password": credentials["initial_password"],
+            },
+        )
 
     return templates.TemplateResponse(
         request=request,

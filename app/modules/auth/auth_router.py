@@ -6,7 +6,8 @@ from pydantic import BaseModel, ValidationError
 from app.database import SessionLocal
 from app.models.department import Department
 from app.models.employee import Employee
-from app.models.user import User
+from app.modules.auth.auth_models import User
+from app.modules.auth.auth_repository import get_user_by_id
 from app.modules.auth.auth_service import AuthService
 from app.modules.auth.dependencies import get_current_user, get_optional_current_user
 from app.modules.auth.security import generate_csrf_token, verify_csrf_token
@@ -123,6 +124,7 @@ def login(
     # (chống session fixation)
     request.session.clear()
     request.session["user_id"] = user_id
+    request.session["session_version"] = getattr(user, "session_version", 1)
     refresh_csrf_token(request)
 
     return redirect_response
@@ -138,6 +140,13 @@ def logout(request: Request, csrf_token: str = Form("")):
             status_code=403,
             detail="Phiên làm việc đã hết hạn hoặc thiếu mã CSRF. Hãy tải lại trang rồi thử lại.",
         )
+    user_id = request.session.get("user_id")
+    if user_id:
+        with SessionLocal() as db:
+            user = get_user_by_id(db, user_id)
+            if user is not None:
+                user.session_version = (getattr(user, "session_version", 1) or 1) + 1
+                db.commit()
     request.session.clear()
     return redirect(LOGIN_URL)
 
@@ -205,6 +214,42 @@ def edit_profile_page(
         )
 
 
+def format_validation_error(exc: ValidationError) -> dict:
+    """Chuyển lỗi Pydantic thành thông báo tiếng Việt thân thiện."""
+    field_names = {
+        "id": "Mã nhân viên",
+        "name": "Họ tên",
+        "department_id": "Phòng ban",
+        "position": "Chức vụ",
+        "phone": "Điện thoại",
+        "email": "Email",
+        "address": "Địa chỉ",
+        "gender": "Giới tính",
+        "birthday": "Ngày sinh",
+        "start_date": "Ngày vào làm",
+    }
+    first = exc.errors()[0]
+    field = str(first["loc"][0]) if first["loc"] else ""
+    label = field_names.get(field, "Dữ liệu")
+    error_type = first.get("type", "")
+    ctx = first.get("ctx", {})
+    msg = first.get("msg", "")
+
+    if error_type in ("missing", "string_too_short") or "at least 1 character" in msg:
+        message = f"{label} không được để trống"
+    elif error_type == "string_too_long" or "at most" in msg:
+        max_length = ctx.get("max_length", 100)
+        message = f"{label} tối đa {max_length} ký tự"
+    elif "value_error" in error_type:
+        message = msg.removeprefix("Value error, ")
+    elif error_type in ("enum", "literal_error") or "Input should be" in msg:
+        message = f"{label} phải là 'Nam', 'Nữ' hoặc 'Khác'"
+    else:
+        message = f"{label} không hợp lệ"
+
+    return {"field": field, "message": message}
+
+
 class ProfileUpdateForm(BaseModel):
     """Form tự sửa hồ sơ: gộp csrf_token vào cùng model để tránh lỗi 422.
 
@@ -262,11 +307,7 @@ def update_profile(
             )
             error = employee_service.update_employee(db, employee, data)
         except ValidationError as exc:
-            first = exc.errors()[0]
-            error = {
-                "field": str(first["loc"][0]) if first["loc"] else "",
-                "message": first["msg"].removeprefix("Value error, "),
-            }
+            error = format_validation_error(exc)
 
         if error is not None:
             form_data = {k: (v or "") for k, v in submitted.items()}
@@ -303,9 +344,6 @@ def change_password_page(
     request: Request,
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == ADMIN_ROLE:
-        return redirect("/profile")
-
     return templates.TemplateResponse(
         request=request,
         name="profile/change_password.html",
@@ -325,8 +363,6 @@ def change_password(
     csrf_token: str = Form(""),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role == ADMIN_ROLE:
-        return redirect("/profile")
     # Kiểm tra CSRF
     if not verify_csrf_token(request.session.get("csrf_token"), csrf_token):
         return templates.TemplateResponse(
@@ -341,7 +377,7 @@ def change_password(
         )
 
     with SessionLocal() as db:
-        user = db.get(User, current_user.id)
+        user = get_user_by_id(db, current_user.id)
         if user is None:
             return redirect(LOGIN_URL)
         error = AuthService.change_password(

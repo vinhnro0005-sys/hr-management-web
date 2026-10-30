@@ -5,7 +5,7 @@
   {% if employee %}
     <a class="button button-primary" href="/profile/edit">{{ icon('edit') }} Chỉnh sửa thông tin</a>
   {% endif %}
-  {% if user and user.role|lower == 'employee' and not is_admin %}
+  {% if user %}
     <a class="button" href="/profile/change-password">{{ icon('lock') }} Đổi mật khẩu</a>
   {% endif %}
 {% endblock %}

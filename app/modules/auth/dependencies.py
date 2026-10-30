@@ -2,7 +2,8 @@ from fastapi import Depends, HTTPException, Request
 
 from app.database import SessionLocal
 from app.models.employee import Employee
-from app.models.user import User
+from app.modules.auth.auth_models import User
+from app.modules.auth.auth_repository import get_user_by_id
 from app.modules.auth.auth_service import EMPLOYEE_ACTIVE, ROLE_ADMIN, ROLE_EMPLOYEE
 
 LOGIN_URL = "/login"
@@ -15,9 +16,16 @@ def get_optional_current_user(request: Request) -> User | None:
         return None
 
     with SessionLocal() as db:
-        user = db.get(User, user_id)
+        user = get_user_by_id(db, user_id)
         if user is None or not user.is_active:
             return None
+
+        # Kiểm tra phiên hợp lệ (thu hồi cookie cũ sau khi logout hoặc đổi mật khẩu)
+        session_version = request.session.get("session_version")
+        user_version = getattr(user, "session_version", None)
+        if user_version is not None and session_version is not None:
+            if session_version != user_version:
+                return None
 
         # Tài khoản nhân viên: hồ sơ nhân viên phải còn hoạt động
         if user.role == ROLE_EMPLOYEE and user.employee_id:

@@ -62,3 +62,8 @@ def test_profile_edit():
     assert resp.status_code == 400
     assert resp.text.count('class="message message-error"') == 1
     assert "{'field'" not in resp.text
+
+
+if __name__ == "__main__":
+    test_profile_edit()
+    print("ALL PROFILE EDIT TESTS PASSED!")
