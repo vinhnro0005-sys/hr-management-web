@@ -44,6 +44,7 @@
   --ease-spring: cubic-bezier(.34, 1.45, .64, 1);
   --rise: 6px;
 
+  --topbar-height: 64px;
   --control-height: 42px;
   --control-height-small: 34px;
   --radius: 9px;
@@ -163,7 +164,9 @@ h3 { font-size: 15px; font-weight: 650; }
 .workspace::before { content: ''; position: absolute; z-index: -1; inset: 0 0 auto; height: 340px; pointer-events: none;
   background: radial-gradient(52% 100% at 12% 0%, var(--login-teal), transparent 72%), radial-gradient(42% 90% at 96% 0%, var(--login-navy), transparent 72%);
   mask-image: linear-gradient(#000 45%, transparent); }
-.topbar { min-height: 64px; padding: 12px 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--surface); }
+.topbar { min-height: var(--topbar-height); padding: 12px 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--surface); }
+/* Sticky: the bar (menu button, theme, profile) stays reachable on long pages; frosted so content shows it is passing under. */
+.workspace > .topbar { position: sticky; top: 0; z-index: 15; background: color-mix(in srgb, var(--surface) 86%, transparent); backdrop-filter: blur(12px); }
 .topbar-context, .topbar-actions { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .topbar-context { color: var(--muted); font-size: 13px; }
 .context-dot { width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
@@ -591,6 +594,12 @@ html:not(.no-entrance) .login-card { animation: card-settle 420ms var(--ease-emp
 @keyframes vt-fade-in { from { opacity: 0; } }
 
 @media (min-width: 768px) { .sidebar-backdrop { display: none !important; } }
+/* Sticky table headers where tables fit without sideways scroll. `clip` still trims overflow but, unlike `auto`,
+   is not a scroll container, so the header sticks to the page under the top bar instead of to this box. */
+@media (min-width: 1200px) {
+  .table-scroll { overflow: clip; }
+  thead th { position: sticky; top: var(--topbar-height); z-index: 1; border-bottom: 0; box-shadow: inset 0 -1px 0 var(--border); }
+}
 @media (max-width: 1199px) {
   .sidebar { width: 216px; padding-inline: 12px; }
   .workspace { margin-left: 216px; }
@@ -621,7 +630,7 @@ html:not(.no-entrance) .login-card { animation: card-settle 420ms var(--ease-emp
   .sidebar-open, .sidebar-close { display: inline-flex; }
   .sidebar-backdrop { position: fixed; inset: 0; z-index: 20; border: 0; background: rgb(2 6 23 / 60%); animation: fade-in var(--motion-base) var(--ease-standard) backwards; }
   .workspace { margin-left: 0; }
-  .topbar { padding: 12px 20px; min-height: 64px; }
+  .topbar { padding: 12px 20px; }
   .topbar-context { font-size: 12px; gap: 8px; }
   .topbar-actions { gap: 6px; }
   .context-dot { display: none; }

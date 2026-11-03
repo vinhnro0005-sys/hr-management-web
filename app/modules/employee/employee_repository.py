@@ -1,6 +1,8 @@
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.models.user import User
+
 from app.modules.department.department_models import Department
 from app.modules.employee.employee_models import Employee
 
@@ -76,3 +78,12 @@ def add_employee(db: Session, employee: Employee):
 def update_employee_fields(employee: Employee, values: dict):
     for field_name, value in values.items():
         setattr(employee, field_name, value)
+
+def get_all_employee_ids(db: Session):
+    statement = select(Employee.id)
+    employee_ids = db.scalars(statement).all()
+    return employee_ids
+
+def get_user_by_employee_id(db: Session, employee_id: str):
+    statement = select(User).where(User.employee_id == employee_id)
+    return db.scalar(statement)

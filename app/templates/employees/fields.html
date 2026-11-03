@@ -3,11 +3,9 @@
   <div class="form-grid">
     {% if employee is not defined %}
       <div class="field">
-        <label for="id">Mã nhân viên <span class="required">*</span>
-        </label>
-        <input id="id" name="id" value="{{ form_data.get('id', '') }}" maxlength="20" required{{ field_aria('id', 'id-hint') }}>
-        <small id="id-hint">Tối đa 20 ký tự, không trùng mã đã có.</small>
-        {{ field_error('id') }}
+        <label for="employee-code">Mã nhân viên</label>
+        <input id="employee-code" value="Tự động cấp (NV...)" readonly aria-describedby="id-hint">
+        <small id="id-hint">Hệ thống tự động sinh mã khi tạo hồ sơ.</small>
       </div>
     {% else %}
       <div class="field">
@@ -43,8 +41,8 @@
       {{ field_error('phone') }}
     </div>
     <div class="field">
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" value="{{ form_data.get('email', '') }}" maxlength="255" autocomplete="email"{{ field_aria('email') }}>
+      <label for="email">Email <span class="required">*</span></label>
+      <input id="email" name="email" type="email" value="{{ form_data.get('email', '') }}" maxlength="255" autocomplete="email" required{{ field_aria('email') }}>
       {{ field_error('email') }}
     </div>
     <div class="field field-wide">

@@ -137,6 +137,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                     )
                 template_name = "employees/edit.html"
                 context["employee"] = employee
+                context["return_query"] = form_data.get("return_query", "")
             return templates.TemplateResponse(
                 request=request,
                 name=template_name,

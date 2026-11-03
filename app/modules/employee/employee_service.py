@@ -18,12 +18,13 @@ from app.modules.employee.employee_repository import (
     get_employee_position,
     search_employees,
     update_employee_fields,
+    get_all_employee_ids,
+    get_user_by_employee_id,
 )
 from app.modules.employee.employee_schemas import (
     EmployeeCreate,
     EmployeeUpdate,
 )
-
 
 def get_employee_list_data(
     db: Session,
@@ -40,21 +41,13 @@ def get_employee_list_data(
 
     for department in departments:
         valid_department_ids.add(str(department.id))
-    if department_id and department_id not in valid_department_ids:
-        raise HTTPException(
-            status_code=400,
-            detail="Phòng ban không hợp lệ",
-        )
+
+    if department_id not in valid_department_ids:
+        department_id = ""
     if status not in ("", "Active", "Inactive"):
-        raise HTTPException(
-            status_code=400,
-            detail="Trạng thái không hợp lệ",
-        )
-    if position and position not in positions:
-        raise HTTPException(
-            status_code=400,
-            detail="Chức vụ không hợp lệ"
-        )
+        status = ""
+    if position not in positions:
+        position = ""
     department_id_value = None
 
     if department_id:
@@ -79,31 +72,21 @@ def get_employee_list_data(
 
 
 def create_employee(db: Session, data: EmployeeCreate):
-    existing_employee = get_employee_by_id(db, data.id)
-
-    if existing_employee is not None:
-        return None, {"field": "id", "message": "Mã nhân viên đã tồn tại"}
-
     department = get_department_by_id(db, data.department_id)
 
     if department is None:
         return None, {"field": "department_id", "message": "Phòng ban không tồn tại"}
-    if data.email is not None:
-        existing_employee = get_employee_by_email(db, data.email)
-        if existing_employee is not None:
-            return None, {"field": "email", "message": "Email đã được sử dụng"}
+    existing_employee = get_employee_by_email(db, data.email)
+    if existing_employee is not None:
+        return None, {"field": "email", "message": "Email đã được sử dụng"}
 
-    username = data.id
-
-    existing_user = AuthService.get_user_by_username(db, username)
-    if existing_user is not None:
-        return None, {"field": "id", "message": "Mã nhân viên này trùng với tên tài khoản đã có"}
+    username = generate_employee_id(db)
 
     initial_password = secrets.token_urlsafe(12)
     password_hash = hash_password(initial_password)
 
     employee = Employee(
-        id=data.id,
+        id=username,
         name=data.name,
         department_id=data.department_id,
         position=data.position,
@@ -165,12 +148,12 @@ def update_employee(
 
     if department is None:
         return {"field": "department_id", "message": "Phòng ban không tồn tại"}
-    if data.email is not None:
-        existing_employee = get_employee_by_email(db, data.email)
 
-        if existing_employee is not None:
-            if existing_employee.id != employee.id:
-                return {"field": "email", "message": "Email đã được sử dụng"}
+    existing_employee = get_employee_by_email(db, data.email)
+
+    if existing_employee is not None:
+        if existing_employee.id != employee.id:
+            return {"field": "email", "message": "Email đã được sử dụng"}
 
     values = data.model_dump()
     update_employee_fields(employee, values)
@@ -216,7 +199,7 @@ def get_employee_edit_data(db: Session, employee_id: str):
     }
 
 
-def deactive_employee(db: Session, employee_id: str):
+def deactivate_employee(db: Session, employee_id: str):
     employee = get_employee_by_id(db, employee_id)
 
     if employee is None:
@@ -230,5 +213,44 @@ def deactive_employee(db: Session, employee_id: str):
         employee,
         {"status": "Inactive"}
     )
+    user = get_user_by_employee_id(db, employee.id)
+    if user is not None:
+        user.is_active = False
 
     db.commit()
+
+def activate_employee(db: Session, employee_id: str):
+    employee = get_employee_by_id(db, employee_id)
+    if employee is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy nhân viên",
+        )
+    if employee.status == "Active":
+        return
+    update_employee_fields(
+        employee,
+        {"status": "Active"}
+    )
+    user = get_user_by_employee_id(db, employee.id)
+    if user is not None:
+        user.is_active = True
+    db.commit()
+
+def generate_employee_id(db: Session) -> str:
+    employee_ids = get_all_employee_ids(db)
+    max_number = 0
+    for emp_id in employee_ids:
+        if emp_id.startswith("NV"):
+            number_part = emp_id[2:]
+            if number_part.isdigit():
+                number = int(number_part)
+                if number > max_number:
+                    max_number = number
+    next_number = max_number + 1
+    new_id = f"NV{next_number:03d}"
+
+    while AuthService.get_user_by_username(db, new_id) is not None:
+        next_number += 1
+        new_id = f"NV{next_number:03d}"
+    return new_id

@@ -117,7 +117,7 @@ def create_employee(
         request=request,
         name="employees/created.html",
         context={
-            "employee_id": data.id,
+            "employee_id": credentials["username"],
             "credentials": credentials,
         },
         headers={"Cache-Control": "no-store"},
@@ -182,7 +182,8 @@ def update_employee(
                     "departments": departments,
                     "error": error["message"],
                     "field_errors": {error["field"]: error["message"]},
-                    "form_data": form_data
+                    "form_data": form_data,
+                    "return_query": return_query,
                 },
                 status_code=400
             )
@@ -197,9 +198,19 @@ def update_employee(
 @router.post("/employees/{employee_id}/deactivate")
 def deactivate_employee(employee_id: str, return_query: str = Depends(get_return_query)):
     with SessionLocal() as db:
-        employee_service.deactive_employee(db, employee_id)
+        employee_service.deactivate_employee(db, employee_id)
     suffix = f"?{return_query}" if return_query else ""
     return RedirectResponse(
         url=f"/employees/{employee_id}{suffix}",
         status_code=303
     )
+
+@router.post("/employees/{employee_id}/activate")
+def activate_employee(employee_id: str, return_query: str = Depends(get_return_query)):
+    with SessionLocal() as db:
+        employee_service.activate_employee(db, employee_id)
+        suffix = f"?{return_query}" if return_query else ""
+        return RedirectResponse(
+            url=f"/employees/{employee_id}{suffix}",
+            status_code=303
+        )
