@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.modules.department.department_models import Department
+from app.modules.employee.employee_models import Employee
 
 
 def get_all_departments(db: Session):
@@ -34,3 +35,13 @@ def add_department(db: Session, name: str):
 
 def update_department_name(department: Department, name: str):
     department.name = name
+
+
+def get_employee_by_department_id(db: Session, department_id: int):
+    statement = select(Employee).where(Employee.department_id == department_id)
+    employee = db.scalar(statement)
+    return employee
+
+
+def remove_department(db: Session, department: Department):
+    db.delete(department)

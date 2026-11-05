@@ -27,6 +27,7 @@
                 <td class="action-cell">
                   <div class="row-actions">
                     <a class="button button-small action-edit" href="/departments/{{ department.id }}/edit" aria-label="Sửa phòng ban {{ department.name }}">{{ icon('edit') }} Sửa</a>
+                    <form method="post" action="/departments/{{ department.id }}/delete" data-success="Đã xóa phòng ban." data-loading-text="Đang xóa…" data-confirm-title="Xóa phòng ban" data-confirm="Bạn có chắc chắn muốn xóa phòng ban {{ department.name }}?">{{ csrf_field() }}<button type="submit" class="button button-small button-danger" aria-label="Xóa phòng ban {{ department.name }}">{{ icon('close') }} Xóa</button></form>
                   </div>
                 </td>
               </tr>

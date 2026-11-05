@@ -92,3 +92,30 @@ def update_department(request: Request, department_id: int, data: DepartmentUpda
         url="/departments",
         status_code=303
     )
+
+
+@router.post("/departments/{department_id}/delete")
+def delete_department(request: Request, department_id: int):
+    with SessionLocal() as db:
+        department = get_department_by_id(db, department_id)
+        if department is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Không tìm thấy phòng ban"
+            )
+        error = department_service.delete_department(db, department)
+        if error:
+            departments = get_all_departments(db)
+            return templates.TemplateResponse(
+                request=request,
+                name="departments/list.html",
+                context={
+                    "departments": departments,
+                    "error": error,
+                },
+                status_code=400,
+            )
+    return RedirectResponse(
+        url="/departments",
+        status_code=303
+    )

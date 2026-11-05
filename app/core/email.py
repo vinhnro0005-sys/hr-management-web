@@ -30,9 +30,10 @@ def send_email(to_email: str, subject: str, template_name: str, context: dict) -
         html_body = template.render(**context)
 
         # 2. Tạo đối tượng MIME
+        from_email = settings.emails_from_email or settings.smtp_user
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = f"{settings.emails_from_name} <{settings.emails_from_email}>"
+        msg["From"] = f"{settings.emails_from_name} <{from_email}>"
         msg["To"] = to_email
         msg.attach(MIMEText(html_body, "html", "utf-8"))
 
@@ -40,7 +41,7 @@ def send_email(to_email: str, subject: str, template_name: str, context: dict) -
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10) as server:
             server.starttls()  # Mã hóa kết nối an toàn TLS
             server.login(settings.smtp_user, settings.smtp_password)
-            server.sendmail(settings.emails_from_email, [to_email], msg.as_string())
+            server.sendmail(from_email, [to_email], msg.as_string())
 
         logger.info(f"Đã gửi email thành công tới: {to_email}")
         return True
