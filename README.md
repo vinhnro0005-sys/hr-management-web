@@ -164,7 +164,6 @@ hr-management-web/
 ├── app/
 │   ├── config.py           # Đọc cấu hình từ .env
 │   ├── database.py         # Engine + SessionLocal
-│   ├── models/             # Điểm import chung cho các model
 │   ├── modules/
 │   │   ├── auth/           # Đăng nhập, phân quyền, hồ sơ cá nhân, đổi mật khẩu
 │   │   ├── dashboard/      # Thống kê tổng quan

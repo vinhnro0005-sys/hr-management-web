@@ -11,7 +11,8 @@ from sqlalchemy.pool import StaticPool
 
 import app.database
 from app.database import Base
-from app.models import Department, Employee
+from app.modules.department.department_models import Department
+from app.modules.employee.employee_models import Employee
 from app.modules.auth.auth_service import AuthService
 
 # One in-memory SQLite engine for the whole test run, patched in before any router imports SessionLocal.

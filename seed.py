@@ -6,9 +6,9 @@ if hasattr(sys.stdout, "reconfigure"):
 from sqlalchemy import select
 
 from app.database import Base, SessionLocal, engine
-from app.models.department import Department
-from app.models.employee import Employee
-from app.models.user import User
+from app.modules.department.department_models import Department
+from app.modules.employee.employee_models import Employee
+from app.modules.auth.auth_models import User
 from app.modules.auth.auth_service import AuthService
 
 

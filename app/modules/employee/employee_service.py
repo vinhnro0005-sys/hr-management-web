@@ -3,7 +3,7 @@ import secrets
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.models.user import User
+from app.modules.auth.auth_models import User
 from app.modules.auth.auth_service import AuthService
 from app.modules.auth.security import hash_password
 from app.modules.department.department_repository import (

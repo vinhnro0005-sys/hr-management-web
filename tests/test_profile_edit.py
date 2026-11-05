@@ -15,7 +15,8 @@ def test_profile_edit():
     from fastapi.testclient import TestClient
 
     from app.database import SessionLocal
-    from app.models import Department, Employee
+    from app.modules.department.department_models import Department
+    from app.modules.employee.employee_models import Employee
     from main import app
 
     with SessionLocal() as db:

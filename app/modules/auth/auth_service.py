@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models.employee import Employee
+from app.modules.employee.employee_models import Employee
 from app.modules.auth.auth_models import User
 from app.modules.auth.auth_repository import (
     add_user as repo_add_user,

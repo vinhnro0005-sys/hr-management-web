@@ -12,11 +12,8 @@ def test_employee_auth_refactor():
     from fastapi.testclient import TestClient
 
     from app.database import SessionLocal
-    from app.models.employee import Employee
-    from app.modules.employee.employee_models import Employee as ModuleEmployee
+    from app.modules.employee.employee_models import Employee
     from main import app
-
-    assert Employee is ModuleEmployee
 
     client = TestClient(app, follow_redirects=False)
     page = client.get("/login")

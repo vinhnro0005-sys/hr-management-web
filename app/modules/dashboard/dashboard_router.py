@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 
 from app.database import SessionLocal
-from app.models.user import User
+from app.modules.auth.auth_models import User
 from app.modules.auth.dependencies import require_admin
 from app.modules.dashboard import dashboard_service
 

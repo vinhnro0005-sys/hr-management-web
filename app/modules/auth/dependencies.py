@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, Request
 
 from app.database import SessionLocal
-from app.models.employee import Employee
+from app.modules.employee.employee_models import Employee
 from app.modules.auth.auth_models import User
 from app.modules.auth.auth_repository import get_user_by_id
 from app.modules.auth.auth_service import EMPLOYEE_ACTIVE, ROLE_ADMIN, ROLE_EMPLOYEE

@@ -1,7 +1,7 @@
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.models.user import User
+from app.modules.auth.auth_models import User
 
 from app.modules.department.department_models import Department
 from app.modules.employee.employee_models import Employee
