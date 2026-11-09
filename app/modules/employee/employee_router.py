@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from app.core.email import send_email
-from app.database import SessionLocal
+from app.core.database import SessionLocal
 from app.modules.department.department_repository import (
     get_all_departments,
 )
@@ -214,3 +214,14 @@ def activate_employee(employee_id: str, return_query: str = Depends(get_return_q
             url=f"/employees/{employee_id}{suffix}",
             status_code=303
         )
+
+
+@router.post("/employees/{employee_id}/delete")
+def delete_employee(employee_id: str, return_query: str = Depends(get_return_query)):
+    with SessionLocal() as db:
+        employee_service.delete_employee(db, employee_id)
+    suffix = f"?{return_query}" if return_query else ""
+    return RedirectResponse(
+        url=f"/employees{suffix}",
+        status_code=303
+    )

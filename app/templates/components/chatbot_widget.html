@@ -1,0 +1,558 @@
+<!-- Floating AI Chatbot Widget -->
+<div id="ai-chat-widget" class="ai-chat-widget">
+  <!-- Launcher Button -->
+  <button id="ai-chat-toggle" type="button" class="ai-chat-fab" aria-label="Mở Trợ lý AI" title="Hỏi đáp cùng Trợ lý AI">
+    <span class="ai-chat-fab-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+      </svg>
+    </span>
+    <span class="ai-chat-fab-close" style="display: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </span>
+    <span class="ai-chat-fab-pulse"></span>
+  </button>
+
+  <!-- Chat Window Drawer/Popover -->
+  <div id="ai-chat-panel" class="ai-chat-panel" style="display: none;" role="dialog" aria-labelledby="ai-chat-title" aria-modal="true">
+    <!-- Header -->
+    <div class="ai-chat-header">
+      <div class="ai-chat-header-info">
+        <div class="ai-chat-avatar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="ai-chat-title" class="ai-chat-title">Trợ lý AI Nhân sự</h3>
+          <span class="ai-chat-status"><span class="status-dot"></span> Sẵn sàng giải đáp</span>
+        </div>
+      </div>
+      <div class="ai-chat-header-actions">
+        <button type="button" class="ai-chat-icon-btn" id="ai-chat-clear" title="Xóa lịch sử hội thoại" aria-label="Xóa lịch sử">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+        <button type="button" class="ai-chat-icon-btn" id="ai-chat-close" title="Thu nhỏ" aria-label="Thu nhỏ">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div id="ai-chat-messages" class="ai-chat-messages">
+      <!-- Greeting Bubble -->
+      <div class="chat-message-group">
+        <div class="chat-bubble chat-bubble-bot" style="background: var(--surface, #ffffff); border: 1px solid var(--border, #e2e8f0); color: var(--text, #1e293b); padding: 14px 18px; border-radius: 16px 16px 16px 2px; max-width: 90%; font-size: 14px; line-height: 1.5; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <p style="margin: 0 0 8px 0; font-weight: 600; color: var(--primary, #0284c7);">Xin chào! 👋</p>
+          <p style="margin: 0 0 10px 0;">Tôi là trợ lý AI thông minh của Hệ thống Quản lý Nhân sự. Bạn có thể hỏi tôi về:</p>
+          <ul style="margin: 0 0 12px 0; padding-left: 20px; font-size: 13px; color: var(--text-secondary, #475569);">
+            <li><strong>Số liệu nhân sự:</strong> Thống kê số lượng, danh sách nhân viên theo phòng ban, trạng thái làm việc...</li>
+            <li><strong>Nội quy & chính sách:</strong> Quy định ngày phép, thời gian làm việc, khen thưởng, kỷ luật, chế độ...</li>
+          </ul>
+          <p style="margin: 0; font-size: 12.5px; color: var(--muted, #64748b);">Hãy chọn câu hỏi gợi ý bên dưới hoặc nhập câu hỏi của bạn:</p>
+        </div>
+      </div>
+
+      <!-- Suggestion Chips -->
+      <div id="ai-suggestion-chips" class="ai-suggestion-chips" style="display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0;">
+        <button type="button" class="ai-chip" data-prompt="Có bao nhiêu nhân viên đang hoạt động?">👥 Số nhân viên đang làm việc</button>
+        <button type="button" class="ai-chip" data-prompt="Liệt kê danh sách nhân viên phòng CNTT">💻 Nhân viên phòng CNTT</button>
+        <button type="button" class="ai-chip" data-prompt="Quy định số ngày nghỉ phép năm thế nào?">🏖️ Quy định ngày nghỉ phép</button>
+        <button type="button" class="ai-chip" data-prompt="Quy chế khen thưởng và kỷ luật của công ty?">📜 Khen thưởng & Kỷ luật</button>
+      </div>
+    </div>
+
+    <!-- Loading Indicator (hidden by default) -->
+    <div id="ai-chat-loading" class="ai-chat-loading" style="display: none;">
+      <div class="ai-typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+      <span style="font-size: 12px; color: var(--muted, #64748b);">Trợ lý AI đang tra cứu dữ liệu...</span>
+    </div>
+
+    <!-- Input Footer -->
+    <form id="ai-chat-form" class="ai-chat-form" onsubmit="return false;">
+      <div class="ai-chat-input-wrapper">
+        <textarea id="ai-chat-input" class="ai-chat-input" placeholder="Hỏi về số liệu hoặc nội quy nhân sự..." rows="1" maxlength="500"></textarea>
+        <button type="submit" id="ai-chat-send" class="ai-chat-send-btn" aria-label="Gửi tin nhắn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="ai-chat-footnote">Hỗ trợ tra cứu số liệu DB bảo mật & trích dẫn văn bản nội quy</div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Chatbot Widget Styles */
+.ai-chat-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: inherit;
+}
+
+.ai-chat-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease;
+  position: relative;
+}
+
+.ai-chat-fab:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.48);
+}
+
+.ai-chat-fab-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+  animation: ai-pulse 2.5s infinite;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+@keyframes ai-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  70% { transform: scale(1.3); opacity: 0; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+.ai-chat-panel {
+  position: absolute;
+  bottom: 68px;
+  right: 0;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  height: 540px;
+  max-height: calc(100vh - 100px);
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 20px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: ai-panel-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ai-panel-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ai-chat-header {
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 19px;
+  border-top-right-radius: 19px;
+}
+
+.ai-chat-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-chat-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-chat-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ai-chat-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #e0f2fe;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+}
+
+.ai-chat-header-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.ai-chat-icon-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  opacity: 0.85;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.ai-chat-icon-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.ai-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--canvas) !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-chip {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ai-chip:hover {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+.chat-table-scroll tr:hover td {
+  background: var(--hover);
+}
+
+.chat-table-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.chat-table-scroll::-webkit-scrollbar-track {
+  background: var(--subtle);
+  border-radius: 4px;
+}
+
+.chat-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--input-border);
+  border-radius: 4px;
+}
+
+.chat-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+.ai-chat-loading {
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-secondary, #f8fafc);
+  border-top: 1px solid var(--border, #f1f5f9);
+}
+
+.ai-typing-indicator {
+  display: flex;
+  gap: 4px;
+}
+
+.ai-typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background: #0284c7;
+  border-radius: 50%;
+  animation: ai-typing 1.2s infinite ease-in-out;
+}
+
+.ai-typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.ai-typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes ai-typing {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1.1); opacity: 1; }
+}
+
+.ai-chat-form {
+  padding: 12px 14px 10px 14px;
+  background: var(--surface) !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+.ai-chat-input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: var(--subtle) !important;
+  border: 1px solid var(--input-border) !important;
+  border-radius: 12px;
+  padding: 6px 8px 6px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.ai-chat-input-wrapper:focus-within {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-ring) !important;
+  background: var(--surface) !important;
+}
+
+.ai-chat-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent !important;
+  resize: none;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text) !important;
+  caret-color: var(--accent) !important;
+  max-height: 100px;
+  padding: 4px 0;
+}
+
+.ai-chat-input::placeholder {
+  color: var(--muted) !important;
+  opacity: 0.8 !important;
+}
+
+.ai-chat-send-btn {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.ai-chat-send-btn:hover:not(:disabled) {
+  background: #0369a1;
+  transform: scale(1.05);
+}
+
+.ai-chat-send-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ai-chat-footnote {
+  font-size: 11px;
+  color: var(--muted, #94a3b8);
+  text-align: center;
+  margin-top: 6px;
+}
+
+@media (max-width: 480px) {
+  .ai-chat-panel {
+    bottom: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("ai-chat-toggle");
+  const panel = document.getElementById("ai-chat-panel");
+  const closeBtn = document.getElementById("ai-chat-close");
+  const clearBtn = document.getElementById("ai-chat-clear");
+  const form = document.getElementById("ai-chat-form");
+  const input = document.getElementById("ai-chat-input");
+  const sendBtn = document.getElementById("ai-chat-send");
+  const messages = document.getElementById("ai-chat-messages");
+  const loading = document.getElementById("ai-chat-loading");
+  const fabIcon = toggleBtn.querySelector(".ai-chat-fab-icon");
+  const fabClose = toggleBtn.querySelector(".ai-chat-fab-close");
+
+  function toggleChat(show) {
+    const isVisible = panel.style.display !== "none";
+    const nextState = typeof show === "boolean" ? show : !isVisible;
+    if (nextState) {
+      panel.style.display = "flex";
+      fabIcon.style.display = "none";
+      fabClose.style.display = "block";
+      setTimeout(() => input.focus(), 150);
+      scrollToBottom();
+    } else {
+      panel.style.display = "none";
+      fabIcon.style.display = "block";
+      fabClose.style.display = "none";
+    }
+  }
+
+  toggleBtn.addEventListener("click", () => toggleChat());
+  closeBtn.addEventListener("click", () => toggleChat(false));
+
+  input.addEventListener("input", () => {
+    sendBtn.disabled = !input.value.trim();
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 100) + "px";
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendMessage();
+    }
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!sendBtn.disabled) sendMessage();
+  });
+
+  // Gợi ý câu hỏi nhanh
+  document.querySelectorAll(".ai-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const prompt = chip.dataset.prompt;
+      if (prompt) {
+        input.value = prompt;
+        sendBtn.disabled = false;
+        sendMessage();
+      }
+    });
+  });
+
+  clearBtn.addEventListener("click", () => {
+    const bubbles = messages.querySelectorAll(".chat-message-group");
+    // Giữ lại lời chào đầu tiên
+    for (let i = 1; i < bubbles.length; i++) {
+      bubbles[i].remove();
+    }
+  });
+
+  function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+
+    // 1. Thêm bubble câu hỏi người dùng tạm thời
+    const userBubble = document.createElement("div");
+    userBubble.className = "chat-message-group";
+    userBubble.style.cssText = "display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;";
+    userBubble.innerHTML = `
+      <div class="chat-bubble chat-bubble-user" style="align-self: flex-end; background-color: var(--primary, #0284c7); color: #ffffff; padding: 10px 16px; border-radius: 16px 16px 2px 16px; max-width: 80%; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div class="chat-text">${escapeHtml(text)}</div>
+      </div>
+    `;
+    messages.appendChild(userBubble);
+    scrollToBottom();
+
+    // 2. Hiện loading
+    loading.style.display = "flex";
+    scrollToBottom();
+
+    try {
+      // 3. Gọi endpoint POST /chat/message
+      const params = new URLSearchParams();
+      params.append("message", text);
+
+      const resp = await fetch("/chat/message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params
+      });
+
+      if (!resp.ok) {
+        throw new Error(`Mã lỗi máy chủ: ${resp.status}`);
+      }
+
+      const htmlChunk = await resp.text();
+
+      // Xóa bubble tạm thời của user vì htmlChunk đã có sẵn user_message
+      userBubble.remove();
+
+      // Thêm HTML từ server
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = htmlChunk;
+      while (tempDiv.firstChild) {
+        messages.appendChild(tempDiv.firstChild);
+      }
+    } catch (err) {
+      console.error("AI Chatbot Error:", err);
+      const errBubble = document.createElement("div");
+      errBubble.className = "chat-message-group";
+      errBubble.innerHTML = `
+        <div class="chat-bubble chat-bubble-bot" style="align-self: flex-start; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 12px 16px; border-radius: 16px; max-width: 90%; font-size: 13.5px;">
+          ⚠️ Không thể kết nối với dịch vụ AI: ${escapeHtml(err.message || 'Lỗi mạng')}
+        </div>
+      `;
+      messages.appendChild(errBubble);
+    } finally {
+      loading.style.display = "none";
+      scrollToBottom();
+      input.focus();
+    }
+  }
+
+  function escapeHtml(string) {
+    const div = document.createElement("div");
+    div.textContent = string;
+    return div.innerHTML;
+  }
+});
+</script>
+

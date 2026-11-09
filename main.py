@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.config import settings
+from app.core.config import settings
 from app.core.exceptions import http_not_found, validation_exception_handler
 from app.modules.auth.auth_router import router as auth_router
 from app.modules.auth.dependencies import get_optional_current_user, require_admin
@@ -14,6 +14,7 @@ from app.modules.dashboard.dashboard_router import router as dashboard_router
 from app.modules.department.department_router import router as department_router
 from app.modules.employee.csrf import require_csrf
 from app.modules.employee.employee_router import router as employee_router
+from app.modules.chatbot.chatbot_router import router as chatbot_router
 
 app = FastAPI(title="HR Management System")
 
@@ -30,6 +31,7 @@ app.include_router(auth_router)
 app.include_router(department_router, dependencies=[Depends(require_admin), Depends(require_csrf)])
 app.include_router(employee_router, dependencies=[Depends(require_admin), Depends(require_csrf)])
 app.include_router(dashboard_router)
+app.include_router(chatbot_router)
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 

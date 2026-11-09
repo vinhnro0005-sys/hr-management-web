@@ -2,7 +2,7 @@
 {% set path = request.url.path %}
 {# The signed-in user decides the role when a page passes one; otherwise admin-only URLs imply it. #}
 {% set is_admin = user.role == 'admin' if user is defined and user else (path.startswith('/employees') or path.startswith('/departments')) %}
-{% set is_login = path == '/login' %}
+{% set is_login = path in ['/login', '/forgot-password', '/reset-password'] %}
 <!doctype html>
 <html lang="vi" data-theme="light">
   <head>
@@ -48,9 +48,10 @@
           {% elif section == 'departments' %}{% set crumbs = [('Phòng ban', '/departments'), ('Sửa', none)] %}
           {% elif section == 'dashboard' %}{% set crumbs = [('Quản trị', none), ('Tổng quan', none)] %}
           {% elif section == 'profile' %}{% set crumbs = [('Tài khoản', none), ('Hồ sơ cá nhân', none)] %}
+          {% elif section == 'chat' %}{% set crumbs = [('Trợ lý', none), ('Hỏi đáp AI', none)] %}
           {% else %}{% set crumbs = [] %}{% endif %}
-          {% set page_icon = {'employees': 'people', 'departments': 'building', 'dashboard': 'dashboard', 'profile': 'person'}.get(section, error_icon|default('alert')) %}
-          {% set page_tone = {'employees': 'blue', 'departments': 'indigo', 'dashboard': 'teal', 'profile': 'rose'}.get(section, 'amber') %}
+          {% set page_icon = {'employees': 'people', 'departments': 'building', 'dashboard': 'dashboard', 'profile': 'person', 'chat': 'bot'}.get(section, error_icon|default('alert')) %}
+          {% set page_tone = {'employees': 'blue', 'departments': 'indigo', 'dashboard': 'teal', 'profile': 'rose', 'chat': 'amber'}.get(section, 'amber') %}
           <div class="page-heading">
             <div class="page-title">
               <span class="page-icon tone-{{ page_tone }}" aria-hidden="true">{{ icon(page_icon) }}</span>
@@ -82,5 +83,8 @@
       </main>
       {% if not is_login %}<footer class="page-footer">Hệ thống Quản lý Nhân sự</footer>{% endif %}
     </div>
+    {% if not is_login %}
+      {% include 'components/chatbot_widget.html' %}
+    {% endif %}
   </body>
 </html>

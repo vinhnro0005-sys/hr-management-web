@@ -2,7 +2,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.database import SessionLocal
+from app.core.database import SessionLocal
 from app.modules.department import department_service
 from app.modules.department.department_repository import (
     get_all_departments,

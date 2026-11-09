@@ -58,13 +58,25 @@
           </div>
         </div>
       {% endif %}
+      {% if request.query_params.get('reset') == '1' %}
+        <div class="message message-success" role="status" tabindex="-1">
+          {{ icon('check') }}
+          <div>
+            <strong>Đặt lại mật khẩu thành công</strong>
+            <p>Mật khẩu của bạn đã được cập nhật. Vui lòng đăng nhập bằng mật khẩu mới.</p>
+          </div>
+        </div>
+      {% endif %}
       {% include 'components/messages.html' %}
       <form method="post" action="/login" data-loading-text="Đang đăng nhập…">{{ csrf_field() }}<div class="field">
           <label for="username">Tên đăng nhập</label>
           <input id="username" name="username" value="{{ username|default('') }}" autocomplete="username" required autofocus placeholder="Nhập tên đăng nhập">
         </div>
         <div class="field">
-          <label for="password">Mật khẩu</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label for="password" style="margin-bottom: 0;">Mật khẩu</label>
+            <a href="/forgot-password" class="subtle-link" style="font-size: 13px; color: var(--primary, #0284c7); text-decoration: none;">Quên mật khẩu?</a>
+          </div>
           <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Nhập mật khẩu">
         </div>
         <button class="button button-primary login-submit" type="submit">{{ icon('login') }} Đăng nhập</button>

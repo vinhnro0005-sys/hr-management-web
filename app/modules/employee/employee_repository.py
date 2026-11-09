@@ -75,6 +75,10 @@ def add_employee(db: Session, employee: Employee):
     db.add(employee)
 
 
+def remove_employee(db: Session, employee: Employee):
+    db.delete(employee)
+
+
 def update_employee_fields(employee: Employee, values: dict):
     for field_name, value in values.items():
         setattr(employee, field_name, value)

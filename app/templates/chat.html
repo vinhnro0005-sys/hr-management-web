@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% set page_title = 'Trợ lý AI Nhân sự' %}
+{% block description %}Hỏi đáp thông minh về số liệu nhân sự trong hệ thống và tra cứu nội quy, chính sách công ty.{% endblock %}
+
+{% block content %}
+<style>
+  .chat-fullpage-container {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+  }
+  .chat-header-bar {
+    background: var(--subtle) !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+  #fullpage-chat-messages {
+    background: var(--canvas) !important;
+  }
+  #fullpage-loading {
+    background: var(--subtle) !important;
+    border-top: 1px solid var(--border) !important;
+  }
+  #fullpage-chat-form {
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border) !important;
+  }
+  .chat-input-wrapper {
+    background: var(--subtle) !important;
+    border: 1px solid var(--input-border) !important;
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .chat-input-wrapper:focus-within {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-ring) !important;
+    background: var(--surface) !important;
+  }
+  #fullpage-chat-input {
+    color: var(--text) !important;
+    background: transparent !important;
+    caret-color: var(--accent) !important;
+  }
+  #fullpage-chat-input::placeholder {
+    color: var(--muted) !important;
+    opacity: 0.8 !important;
+  }
+  .ai-chip {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+  }
+  .ai-chip:hover {
+    background: var(--accent-soft) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+  }
+  .chat-bubble-bot {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
+  }
+  .chat-table-scroll tr:hover td {
+    background: var(--hover);
+  }
+  .chat-table-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+  .chat-table-scroll::-webkit-scrollbar-track {
+    background: var(--subtle);
+    border-radius: 4px;
+  }
+  .chat-table-scroll::-webkit-scrollbar-thumb {
+    background: var(--input-border);
+    border-radius: 4px;
+  }
+  .chat-table-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+  
+  .chat-table-scroll tr:hover td {
+    background: var(--hover);
+  }
+  .chat-table-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+  .chat-table-scroll::-webkit-scrollbar-track {
+    background: var(--subtle);
+    border-radius: 4px;
+  }
+  .chat-table-scroll::-webkit-scrollbar-thumb {
+    background: var(--input-border);
+    border-radius: 4px;
+  }
+  .chat-table-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--muted);
+  }
+  }
+</style>
+
+<div class="chat-fullpage-container" style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; height: calc(100vh - 210px); min-height: 520px; border-radius: 16px; box-shadow: var(--shadow-raised); overflow: hidden;">
+  
+  <!-- Chat Header Bar -->
+  <div class="chat-header-bar" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="page-icon tone-amber" style="width: 36px; height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706;" aria-hidden="true">
+        {{ icon('bot') }}
+      </span>
+      <div>
+        <h2 style="font-size: 16px; font-weight: 600; margin: 0; color: var(--text);">Hệ thống Hỏi đáp AI (Gemini + RAG + Text2SQL)</h2>
+        <span style="font-size: 12.5px; color: var(--muted);">Tự động phân loại câu hỏi số liệu (METRIC) và câu hỏi quy chế (POLICY)</span>
+      </div>
+    </div>
+    <button type="button" class="button button-subtle" id="fullpage-clear-chat" style="padding: 6px 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+      {{ icon('close') }} Xóa đoạn chat
+    </button>
+  </div>
+
+  <!-- Messages List -->
+  <div id="fullpage-chat-messages" style="flex: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column;">
+    
+    <!-- Greeting message -->
+    <div class="chat-message-group" style="margin-bottom: 20px;">
+      <div class="chat-bubble chat-bubble-bot" style="align-self: flex-start; padding: 18px 22px; border-radius: 16px 16px 16px 2px; max-width: 85%; font-size: 14.5px; line-height: 1.6; box-shadow: 0 2px 10px rgba(0,0,0,0.04);">
+        <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600; color: #0284c7;">Xin chào! Tôi có thể giúp gì cho bạn hôm nay?</p>
+        <p style="margin: 0 0 12px 0;">Tôi là trợ lý AI được tích hợp trực tiếp vào hệ thống quản lý nhân sự với hai năng lực cốt lõi:</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 14px;">
+          <div style="padding: 12px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.25); border-radius: 8px;">
+            <strong style="color: #0284c7; display: block; margin-bottom: 4px;">📊 Truy vấn số liệu (Text2SQL)</strong>
+            <span style="font-size: 13px; color: var(--text);">Tự động phân tích câu hỏi, sinh câu truy vấn SQL an toàn trên View phân tích và hiển thị Card số liệu hoặc Bảng dữ liệu.</span>
+          </div>
+          <div style="padding: 12px; background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.25); border-radius: 8px;">
+            <strong style="color: #d97706; display: block; margin-bottom: 4px;">📚 Tra cứu quy chế (RAG + ChromaDB)</strong>
+            <span style="font-size: 13px; color: var(--text);">Tìm kiếm ngữ nghĩa trong văn bản Nội quy lao động, trích dẫn chính xác điều khoản và số trang tài liệu.</span>
+          </div>
+        </div>
+        <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: 500; color: var(--text);">Gợi ý câu hỏi bạn có thể thử ngay:</p>
+      </div>
+    </div>
+
+    <!-- Suggestion Chips -->
+    <div id="fullpage-chips" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+      <button type="button" class="ai-chip" data-prompt="Có bao nhiêu nhân viên đang hoạt động trong công ty?">👥 Số nhân viên đang làm việc</button>
+      <button type="button" class="ai-chip" data-prompt="Danh sách các nhân viên mới vào làm">📋 Danh sách nhân viên</button>
+      <button type="button" class="ai-chip" data-prompt="Nhân viên chính thức được nghỉ bao nhiêu ngày phép một năm?">🏖️ Ngày nghỉ phép năm</button>
+      <button type="button" class="ai-chip" data-prompt="Các hình thức khen thưởng và xử lý kỷ luật theo quy chế?">⚖️ Khen thưởng và kỷ luật</button>
+      <button type="button" class="ai-chip" data-prompt="Thời gian làm việc và quy định đi muộn của công ty thế nào?">⏰ Thời gian làm việc</button>
+    </div>
+
+  </div>
+
+  <!-- Loading State -->
+  <div id="fullpage-loading" style="display: none; padding: 12px 24px; align-items: center; gap: 12px;">
+    <div class="ai-typing-indicator">
+      <span></span><span></span><span></span>
+    </div>
+    <span style="font-size: 13px; color: var(--muted);">Trợ lý AI đang xử lý câu hỏi của bạn...</span>
+  </div>
+
+  <!-- Bottom Input Form -->
+  <form id="fullpage-chat-form" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 8px;">
+    <div class="chat-input-wrapper" style="display: flex; align-items: flex-end; gap: 10px;">
+      <textarea id="fullpage-chat-input" placeholder="Nhập câu hỏi về số liệu nhân viên hoặc nội quy công ty (Enter để gửi, Shift+Enter xuống dòng)..." rows="1" style="flex: 1; border: none; outline: none; background: transparent; font-family: inherit; font-size: 14.5px; line-height: 1.5; resize: none; max-height: 120px;"></textarea>
+      <button type="submit" id="fullpage-chat-send" class="button button-primary" style="padding: 8px 16px; display: inline-flex; align-items: center; gap: 8px;" disabled>
+        <span>Gửi</span>
+        {{ icon('send') }}
+      </button>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--muted);">
+      <span>Mẹo: Hệ thống tự động phân loại và áp dụng chính sách bảo mật Select-only trên CSDL.</span>
+      <span id="fullpage-char-count">0/500</span>
+    </div>
+  </form>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("fullpage-chat-form");
+  const input = document.getElementById("fullpage-chat-input");
+  const sendBtn = document.getElementById("fullpage-chat-send");
+  const messages = document.getElementById("fullpage-chat-messages");
+  const loading = document.getElementById("fullpage-loading");
+  const clearBtn = document.getElementById("fullpage-clear-chat");
+  const charCount = document.getElementById("fullpage-char-count");
+
+  function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  input.addEventListener("input", () => {
+    const len = input.value.length;
+    charCount.textContent = `${len}/500`;
+    sendBtn.disabled = !input.value.trim();
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 120) + "px";
+  });
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!sendBtn.disabled) sendChat();
+    }
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!sendBtn.disabled) sendChat();
+  });
+
+  document.querySelectorAll("#fullpage-chips .ai-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const prompt = chip.dataset.prompt;
+      if (prompt) {
+        input.value = prompt;
+        sendBtn.disabled = false;
+        sendChat();
+      }
+    });
+  });
+
+  clearBtn.addEventListener("click", () => {
+    const bubbles = messages.querySelectorAll(".chat-message-group");
+    for (let i = 1; i < bubbles.length; i++) {
+      bubbles[i].remove();
+    }
+  });
+
+  async function sendChat() {
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+    charCount.textContent = "0/500";
+
+    // 1. Thêm bubble câu hỏi của user tạm thời
+    const userBubble = document.createElement("div");
+    userBubble.className = "chat-message-group";
+    userBubble.style.cssText = "display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;";
+    userBubble.innerHTML = `
+      <div class="chat-bubble chat-bubble-user" style="align-self: flex-end; background-color: var(--primary, #0284c7); color: #ffffff; padding: 12px 18px; border-radius: 16px 16px 2px 16px; max-width: 80%; font-size: 14.5px; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div class="chat-text">${escapeHtml(text)}</div>
+      </div>
+    `;
+    messages.appendChild(userBubble);
+    scrollToBottom();
+
+    // 2. Hiện loading
+    loading.style.display = "flex";
+    scrollToBottom();
+
+    try {
+      const params = new URLSearchParams();
+      params.append("message", text);
+
+      const resp = await fetch("/chat/message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params
+      });
+
+      if (!resp.ok) {
+        throw new Error(`Mã lỗi máy chủ: ${resp.status}`);
+      }
+
+      const htmlChunk = await resp.text();
+
+      // Xóa bubble tạm
+      userBubble.remove();
+
+      // Thêm HTML từ server
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = htmlChunk;
+      while (tempDiv.firstChild) {
+        messages.appendChild(tempDiv.firstChild);
+      }
+    } catch (err) {
+      console.error("AI Chatbot Error:", err);
+      const errBubble = document.createElement("div");
+      errBubble.className = "chat-message-group";
+      errBubble.innerHTML = `
+        <div class="chat-bubble chat-bubble-bot" style="align-self: flex-start; background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; padding: 14px 18px; border-radius: 16px; max-width: 90%; font-size: 14px;">
+          ⚠️ Không thể kết nối với dịch vụ AI: ${escapeHtml(err.message || 'Lỗi mạng')}
+        </div>
+      `;
+      messages.appendChild(errBubble);
+    } finally {
+      loading.style.display = "none";
+      scrollToBottom();
+      input.focus();
+    }
+  }
+
+  function escapeHtml(string) {
+    const div = document.createElement("div");
+    div.textContent = string;
+    return div.innerHTML;
+  }
+});
+</script>
+{% endblock %}
+

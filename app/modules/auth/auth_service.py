@@ -163,6 +163,40 @@ def change_password(
     return None
 
 
+def get_user_by_employee_email(db: Session, email: str) -> tuple[User | None, Employee | None]:
+    """Tìm User và Employee tương ứng dựa vào email của nhân viên."""
+    from sqlalchemy import func, select
+    clean_email = (email or "").strip().lower()
+    if not clean_email:
+        return None, None
+
+    stmt = (
+        select(User, Employee)
+        .join(Employee, User.employee_id == Employee.id)
+        .where(func.lower(func.trim(Employee.email)) == clean_email)
+    )
+    result = db.execute(stmt).first()
+    if result:
+        return result[0], result[1]
+    return None, None
+
+
+def reset_password_with_token(db: Session, user: User, new_password: str) -> str | None:
+    """Cập nhật mật khẩu mới thông qua quy trình Quên mật khẩu và vô hiệu hóa phiên cũ."""
+    new_password = new_password or ""
+    if len(new_password) < 8:
+        return "Mật khẩu mới phải có ít nhất 8 ký tự"
+    if len(new_password.encode("utf-8")) > 72:
+        return "Mật khẩu mới không được vượt quá 72 byte"
+    if verify_password(new_password, user.password_hash):
+        return "Mật khẩu mới không được trùng với mật khẩu hiện tại"
+
+    repo_update_user_password(user, hash_password(new_password))
+    user.session_version = (getattr(user, "session_version", 1) or 1) + 1
+    db.commit()
+    return None
+
+
 # ----------------------------------------------------------------------
 # Lớp AuthService giữ tương thích ngược 100% với code hiện có
 # ----------------------------------------------------------------------
@@ -173,3 +207,5 @@ class AuthService:
     get_user_by_username = staticmethod(get_user_by_username)
     create_user = staticmethod(create_user)
     change_password = staticmethod(change_password)
+    get_user_by_employee_email = staticmethod(get_user_by_employee_email)
+    reset_password_with_token = staticmethod(reset_password_with_token)

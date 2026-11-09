@@ -1,7 +1,7 @@
 from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-from app.config import settings
+from app.core.config import settings
 
 
 class Base(DeclarativeBase):
@@ -19,7 +19,9 @@ database_url = URL.create(
 
 engine = create_engine(
     database_url,
-    echo=True,
+    echo=False,
+    pool_pre_ping=True,
+    pool_recycle=3600,
 )
 
 SessionLocal = sessionmaker(
@@ -30,3 +32,4 @@ SessionLocal = sessionmaker(
 def get_db():
     with SessionLocal() as db:
         yield db
+

@@ -20,6 +20,7 @@ from app.modules.employee.employee_repository import (
     update_employee_fields,
     get_all_employee_ids,
     get_user_by_employee_id,
+    remove_employee,
 )
 from app.modules.employee.employee_schemas import (
     EmployeeCreate,
@@ -236,6 +237,33 @@ def activate_employee(db: Session, employee_id: str):
     if user is not None:
         user.is_active = True
     db.commit()
+
+
+def delete_employee(db: Session, employee_id: str):
+    employee = get_employee_by_id(db, employee_id)
+
+    if employee is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy nhân viên",
+        )
+    if employee.status != "Inactive":
+        raise HTTPException(
+            status_code=400,
+            detail="Cần ngừng hoạt động nhân viên trước khi xóa hồ sơ",
+        )
+
+    user = get_user_by_employee_id(db, employee.id)
+    if user is not None:
+        user.employee_id = None
+        if user.role == "employee":
+            user.is_active = False
+            user.session_version = (user.session_version or 1) + 1
+        db.flush()
+
+    remove_employee(db, employee)
+    db.commit()
+
 
 def generate_employee_id(db: Session) -> str:
     employee_ids = get_all_employee_ids(db)

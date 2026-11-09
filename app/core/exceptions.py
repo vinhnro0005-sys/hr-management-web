@@ -8,7 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.database import SessionLocal
+from app.core.database import SessionLocal
 from app.modules.auth.dependencies import get_optional_current_user
 from app.modules.department.department_repository import (
     get_all_departments,

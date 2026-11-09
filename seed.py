@@ -3,9 +3,9 @@ import sys
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
-from app.database import Base, SessionLocal, engine
+from app.core.database import Base, SessionLocal, engine
 from app.modules.department.department_models import Department
 from app.modules.employee.employee_models import Employee
 from app.modules.auth.auth_models import User
@@ -81,6 +81,34 @@ def seed():
                 print(" -> Đã tạo tài khoản employee: username='employee', password='employee123' (gắn với NV001)")
         else:
             print(" -> Tài khoản employee đã tồn tại (giữ nguyên mật khẩu cũ)")
+
+        # 5. Tạo View v_hr_analytics phục vụ Chatbot Text2SQL
+        try:
+            view_sql = """
+            CREATE OR REPLACE VIEW v_hr_analytics AS
+            SELECT 
+                e.id AS id,
+                e.name AS name,
+                e.gender AS gender,
+                e.birthday AS birthday,
+                e.phone AS phone,
+                e.email AS email,
+                e.address AS address,
+                e.position AS position,
+                d.name AS department,
+                e.start_date AS start_date,
+                e.status AS status
+            FROM employees e
+            LEFT JOIN departments d ON e.department_id = d.id;
+            """
+            if engine.dialect.name == "sqlite":
+                db.execute(text("DROP VIEW IF EXISTS v_hr_analytics"))
+                view_sql = view_sql.replace("CREATE OR REPLACE VIEW", "CREATE VIEW").rstrip(";")
+            db.execute(text(view_sql))
+            db.commit()
+            print(" -> Đã tạo View phân tích dữ liệu cho AI Chatbot: v_hr_analytics")
+        except Exception as ex:
+            print(" -> Cảnh báo khi tạo View v_hr_analytics:", ex)
 
     print("--- Hoàn tất quá trình seed! ---")
 

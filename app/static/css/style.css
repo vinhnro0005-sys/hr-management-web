@@ -502,6 +502,9 @@ dd { margin: 0; font-weight: 600; font-size: 14.5px; overflow-wrap: anywhere; }
 .lifecycle-panel h2 { font-size: 15px; }
 .lifecycle-panel p, .account-panel p:not(.eyebrow) { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
 .lifecycle-panel form { flex-shrink: 0; }
+.lifecycle-panel > div:first-child { flex: 1; min-width: 0; }
+.lifecycle-actions { display: flex; flex: 0 0 auto; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 10px; }
+.lifecycle-actions form { margin: 0; }
 .account-identity { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .account-identity h2 { overflow-wrap: anywhere; }
 .account-identity .eyebrow { margin-bottom: 0; }
@@ -618,6 +621,7 @@ html:not(.no-entrance) .login-card { animation: card-settle 420ms var(--ease-emp
   .profile-sections { grid-template-columns: 1fr; }
   .profile-sections > section + section { border-left: 0; border-top: 1px solid var(--border); }
   .lifecycle-panel, .account-panel { flex-wrap: wrap; }
+  .lifecycle-actions { margin-left: auto; }
   .login-layout { gap: 40px; }
 }
 @media (max-width: 767px) {
@@ -652,6 +656,7 @@ html:not(.no-entrance) .login-card { animation: card-settle 420ms var(--ease-emp
   .profile-identity p { font-size: 13px; }
   .avatar-large { width: 64px; height: 64px; border-radius: 20px; }
   .lifecycle-panel, .account-panel { padding: 22px; }
+  .lifecycle-actions { width: 100%; }
   .page-footer { padding: 16px 20px; }
   .login-main { max-width: 520px; padding: 24px 20px; }
   .login-layout { grid-template-columns: 1fr; gap: 28px; }
@@ -665,6 +670,7 @@ html:not(.no-entrance) .login-card { animation: card-settle 420ms var(--ease-emp
 }
 @media (max-width: 479px) {
   .form-grid, .info-grid, .filter-form { grid-template-columns: 1fr; }
+  .lifecycle-actions { flex-wrap: wrap; }
   .profile-identity { flex-direction: column; }
   .profile-hero { gap: 16px; }
   .profile-separator { display: block; font-size: 0; }

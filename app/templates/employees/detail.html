@@ -11,16 +11,19 @@
     <div>
       <h2>Trạng thái làm việc</h2>
       <p>
-        {% if employee.status == 'Active' %}Ngừng hoạt động sẽ giữ lại hồ sơ và lịch sử của nhân viên.{% else %}Nhân viên đã ngừng hoạt động. Hồ sơ vẫn được lưu trong hệ thống.{% endif %}
+        {% if employee.status == 'Active' %}Ngừng hoạt động sẽ giữ lại hồ sơ và lịch sử. Hãy ngừng hoạt động trước khi xóa vĩnh viễn.{% else %}Nhân viên đã ngừng hoạt động. Bạn có thể kích hoạt lại hoặc xóa vĩnh viễn hồ sơ.{% endif %}
       </p>
     </div>
-    {% if employee.status == 'Active' %}
-      <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-success="Đã chuyển nhân viên sang ngừng hoạt động." data-loading-text="Đang xử lý…" data-confirm-title="Ngừng hoạt động hồ sơ nhân viên" data-confirm="Hồ sơ {{ employee.name }} ({{ employee.id }}) sẽ chuyển sang ngừng hoạt động. Hồ sơ và lịch sử vẫn được giữ lại.">{{ csrf_field() }}<input type="hidden" name="return_query" value="{{ list_query()[1:] }}"><button type="submit" class="button button-danger">{{ icon('user-x') }} Ngừng hoạt động</button>
-      </form>
-    {% endif %}
-    {% if employee.status == 'Inactive' %}
-      <form method="post" action="/employees/{{ employee.id|urlencode }}/activate" data-success="Đã kích hoạt lại nhân viên." data-loading-text="Đang xử lý…" data-confirm-title="Kích hoạt lại hồ sơ nhân viên" data-confirm="Hồ sơ {{ employee.name }} ({{ employee.id }}) sẽ hoạt động trở lại và tài khoản được phép đăng nhập.">{{ csrf_field() }}<input type="hidden" name="return_query" value="{{ list_query()[1:] }}"><button type="submit" class="button button-primary">{{ icon('user-check') }} Kích hoạt lại</button>
-      </form>
-    {% endif %}
+    <div class="lifecycle-actions">
+      {% if employee.status == 'Active' %}
+        <form method="post" action="/employees/{{ employee.id|urlencode }}/deactivate" data-success="Đã chuyển nhân viên sang ngừng hoạt động." data-loading-text="Đang xử lý…" data-confirm-title="Ngừng hoạt động hồ sơ nhân viên" data-confirm="Hồ sơ {{ employee.name }} ({{ employee.id }}) sẽ chuyển sang ngừng hoạt động. Hồ sơ và lịch sử vẫn được giữ lại.">{{ csrf_field() }}<input type="hidden" name="return_query" value="{{ list_query()[1:] }}"><button type="submit" class="button button-danger">{{ icon('user-x') }} Ngừng hoạt động</button>
+        </form>
+      {% else %}
+        <form method="post" action="/employees/{{ employee.id|urlencode }}/activate" data-success="Đã kích hoạt lại nhân viên." data-loading-text="Đang xử lý…" data-confirm-title="Kích hoạt lại hồ sơ nhân viên" data-confirm="Hồ sơ {{ employee.name }} ({{ employee.id }}) sẽ hoạt động trở lại và tài khoản được phép đăng nhập.">{{ csrf_field() }}<input type="hidden" name="return_query" value="{{ list_query()[1:] }}"><button type="submit" class="button button-primary">{{ icon('user-check') }} Kích hoạt lại</button>
+        </form>
+        <form method="post" action="/employees/{{ employee.id|urlencode }}/delete" data-success="Đã xóa hồ sơ nhân viên và vô hiệu hóa tài khoản liên kết." data-loading-text="Đang xóa…" data-confirm-title="Xóa vĩnh viễn hồ sơ nhân viên" data-confirm="Hồ sơ {{ employee.name }} ({{ employee.id }}) sẽ bị xóa vĩnh viễn và tài khoản liên kết bị vô hiệu hóa. Thao tác này không thể hoàn tác.">{{ csrf_field() }}<input type="hidden" name="return_query" value="{{ list_query()[1:] }}"><button type="submit" class="button button-danger-solid">{{ icon('trash') }} Xóa hồ sơ</button>
+        </form>
+      {% endif %}
+    </div>
   </section>
 {% endblock %}

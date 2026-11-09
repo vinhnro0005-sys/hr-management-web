@@ -1,0 +1,153 @@
+<div class="chat-message-group" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+  {% if user_message %}
+  <!-- Tin nhắn người dùng -->
+  <div class="chat-bubble chat-bubble-user"
+    style="align-self: flex-end; background-color: #0284c7; color: #ffffff; padding: 10px 16px; border-radius: 16px 16px 2px 16px; max-width: 80%; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div class="chat-text">{{ user_message }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Phản hồi từ trợ lý AI -->
+  <div class="chat-bubble chat-bubble-bot"
+    style="align-self: flex-start; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 14px 18px; border-radius: 16px 16px 16px 2px; max-width: 96%; width: fit-content; min-width: 0; font-size: 14px; line-height: 1.5; box-shadow: var(--shadow);">
+
+    {% if type == 'STAT_CARD' %}
+    <div class="chat-stat-card" style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        {% set stat_val = data.value if (data is mapping and 'value' in data) else (data if data is number else
+        (data.value if data and data.value is defined else 0)) %}
+        <span style="font-size: 32px; font-weight: 700; color: #0284c7;">{{ stat_val }}</span>
+        <span style="color: var(--muted); font-size: 13px;">kết quả</span>
+      </div>
+      <p style="margin: 0; font-weight: 500;">{{ message }}</p>
+    </div>
+
+    {% elif type == 'TABLE' %}
+    {% set col_names = {
+    'id': 'Mã NV',
+    'emp_id': 'Mã NV',
+    'employee_id': 'Mã NV',
+    'ma_nv': 'Mã NV',
+    'name': 'Họ và tên',
+    'full_name': 'Họ và tên',
+    'ho_ten': 'Họ và tên',
+    'ten_nv': 'Họ và tên',
+    'gender': 'Giới tính',
+    'gioi_tinh': 'Giới tính',
+    'birthday': 'Ngày sinh',
+    'ngay_sinh': 'Ngày sinh',
+    'phone': 'Số điện thoại',
+    'so_dien_thoai': 'Số điện thoại',
+    'sdt': 'SĐT',
+    'email': 'Email',
+    'address': 'Địa chỉ',
+    'dia_chi': 'Địa chỉ',
+    'position': 'Chức vụ',
+    'chuc_vu': 'Chức vụ',
+    'department': 'Phòng ban',
+    'phong_ban': 'Phòng ban',
+    'department_name': 'Phòng ban',
+    'start_date': 'Ngày vào làm',
+    'ngay_vao_lam': 'Ngày vào làm',
+    'status': 'Trạng thái',
+    'trang_thai': 'Trạng thái',
+    'count': 'Số lượng',
+    'so_luong': 'Số lượng',
+    'total': 'Tổng số',
+    'count(*)': 'Số lượng'
+    } %}
+    <div class="chat-table-widget" style="display: flex; flex-direction: column; gap: 10px; width: 100%; min-width: 0;">
+      <p style="margin: 0; font-weight: 500; font-size: 14.5px;">{{ message }}</p>
+      {% if data and data|length > 0 %}
+      <!-- Khung bảng hỗ trợ cuộn cả dọc và ngang mượt mà, cố định tiêu đề cột khi cuộn -->
+      <div class="chat-table-scroll"
+        style="overflow: auto; -webkit-overflow-scrolling: touch; max-width: 100%; max-height: 420px; min-height: 145px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);">
+        <table
+          style="width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0; font-size: 13.5px; text-align: left; white-space: nowrap;">
+          <thead>
+            <tr style="background: var(--subtle);">
+              {% for col in data[0].keys() %}
+              {% set col_clean = (col|string)|lower|trim %}
+              <th
+                style="position: sticky; top: 0; z-index: 2; padding: 11px 16px; font-weight: 600; white-space: nowrap; color: var(--text); background: var(--subtle); border-bottom: 2px solid var(--border);">
+                {{ col_names.get(col_clean, col.replace('_', ' ')|title) }}
+              </th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in data %}
+            <tr style="transition: background 0.12s ease;">
+              {% for col, val in row.items() %}
+              {% set col_clean = (col|string)|lower|trim %}
+              <td
+                style="padding: 10px 16px; white-space: nowrap; color: var(--text); border-bottom: 1px solid var(--border);">
+                {% if col_clean in ['status', 'trang_thai'] %}
+                {% set val_clean = (val|string)|lower|trim if val is not none else '' %}
+                {% if val_clean in ['active', 'đang làm việc', 'đang làm', '1', 'true'] %}
+                <span
+                  style="display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #059669;">
+                  Đang làm việc
+                </span>
+                {% elif val_clean in ['inactive', 'đã nghỉ', 'nghỉ việc', '0', 'false'] %}
+                <span
+                  style="display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(239, 68, 68, 0.15); color: #dc2626;">
+                  Đã nghỉ
+                </span>
+                {% else %}
+                <span
+                  style="display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--subtle); color: var(--muted);">
+                  {{ val if val is not none else '-' }}
+                </span>
+                {% endif %}
+                {% else %}
+                {{ val if val is not none else '-' }}
+                {% endif %}
+              </td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if total_records is defined and total_records is not none %}
+      <div style="font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px;">
+        <span>📊 Tổng cộng: <strong>{{ total_records }}</strong> bản ghi{% if total_records >= 50 %} (tối đa hiển thị 50
+          bản ghi){% endif %}.</span>
+        <span style="opacity: 0.75;">(Cuộn dọc xem danh sách & kéo thanh cuộn ngang để xem đủ các cột)</span>
+      </div>
+      {% endif %}
+      {% else %}
+      <!-- Khi bảng không có dữ liệu phù hợp -->
+      <div
+        style="padding: 14px 18px; border: 1px dashed var(--border); border-radius: 8px; background: var(--subtle); color: var(--muted); font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+        <span>ℹ️ Không tìm thấy bản ghi dữ liệu nào phù hợp với yêu cầu.</span>
+      </div>
+      {% endif %}
+    </div>
+
+    {% elif type == 'TEXT' %}
+    <div class="chat-text-widget">
+      <p style="margin: 0; white-space: pre-wrap;">{{ message }}</p>
+      {% if citation and citation.source %}
+      <div
+        style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 12px; color: var(--muted);">
+        <strong>Nguồn trích dẫn:</strong> {{ citation.source }}
+        {% if citation.pages and citation.pages|length > 0 %}
+        (Trang: {{ citation.pages|join(', ') }})
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+
+    {% else %}
+    <!-- ERROR hoặc thông báo chung -->
+    <div class="chat-alert"
+      style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); color: #dc2626; padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; gap: 10px; font-size: 13.5px;">
+      <span style="font-size: 18px;">⚠️</span>
+      <span>{{ message or 'Đã có lỗi xảy ra trong quá trình xử lý.' }}</span>
+    </div>
+    {% endif %}
+
+  </div>
+</div>

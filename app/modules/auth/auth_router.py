@@ -1,16 +1,22 @@
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, ValidationError
 
-from app.database import SessionLocal
+from app.core.email import send_email
+from app.core.database import SessionLocal
 from app.modules.department.department_models import Department
 from app.modules.employee.employee_models import Employee
 from app.modules.auth.auth_models import User
 from app.modules.auth.auth_repository import get_user_by_id
 from app.modules.auth.auth_service import AuthService
 from app.modules.auth.dependencies import get_current_user, get_optional_current_user
-from app.modules.auth.security import generate_csrf_token, verify_csrf_token
+from app.modules.auth.security import (
+    generate_csrf_token,
+    generate_password_reset_token,
+    verify_csrf_token,
+    verify_password_reset_token,
+)
 from app.modules.department.department_repository import get_all_departments
 from app.modules.employee import employee_service
 from app.modules.employee.employee_repository import get_employee_by_id
@@ -154,7 +160,7 @@ def logout(request: Request, csrf_token: str = Form("")):
 # ---------------------------------------------------------------------------
 # Trang cá nhân
 # ---------------------------------------------------------------------------
-def load_employee_and_department(employee_id: int | None):
+def load_employee_and_department(employee_id: str | None):
     """Lấy nhân viên và phòng ban; trả về (None, None) nếu không có."""
     if not employee_id:
         return None, None
@@ -403,3 +409,278 @@ def change_password(
     # Thành công → đăng xuất để bắt đăng nhập lại với mật khẩu mới
     request.session.clear()
     return redirect(LOGIN_URL + "?changed=1")
+
+
+# ---------------------------------------------------------------------------
+# Quên mật khẩu & Đặt lại mật khẩu (Dành cho nhân viên)
+# ---------------------------------------------------------------------------
+
+# 1. Trang nhập email để lấy link reset
+@router.get("/forgot-password", response_class=HTMLResponse)
+def forgot_password_page(request: Request):
+    """Trang nhập email để gửi yêu cầu đặt lại mật khẩu."""
+    user = get_optional_current_user(request)
+    if user is not None:
+        return redirect_by_role(user)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="forgot_password.html",
+        context={
+            "csrf_token": get_csrf_token(request),
+            "page_title": "Quên mật khẩu",
+        },
+    )
+
+
+# 2. Xử lý gửi email chứa token
+@router.post("/forgot-password")
+def handle_forgot_password(
+    request: Request,
+    email: str = Form(""),
+    csrf_token: str = Form(""),
+):
+    """Xử lý tra cứu nhân viên và gửi email chứa liên kết token bảo mật."""
+    clean_email = (email or "").strip().lower()
+
+    if not verify_csrf_token(request.session.get("csrf_token"), csrf_token):
+        return templates.TemplateResponse(
+            request=request,
+            name="forgot_password.html",
+            context={
+                "error": "Phiên làm việc đã hết hạn hoặc mã CSRF không hợp lệ.",
+                "email": clean_email,
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Quên mật khẩu",
+            },
+            status_code=400,
+        )
+
+    if not clean_email:
+        return templates.TemplateResponse(
+            request=request,
+            name="forgot_password.html",
+            context={
+                "error": "Vui lòng nhập địa chỉ email của nhân viên.",
+                "email": clean_email,
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Quên mật khẩu",
+            },
+            status_code=400,
+        )
+
+    with SessionLocal() as db:
+        user, employee = AuthService.get_user_by_employee_email(db, clean_email)
+        is_emp_active = bool(employee and employee.status and employee.status.strip().lower() in ("active", "đang làm việc", "hoạt động"))
+        if user and employee and user.is_active and is_emp_active:
+            token = generate_password_reset_token(user.id, getattr(user, "session_version", 1) or 1)
+            base_url = str(request.base_url).rstrip("/")
+            reset_link = f"{base_url}/reset-password?token={token}"
+
+            sent = send_email(
+                to_email=employee.email,
+                subject="[HR Management] Hướng dẫn đặt lại mật khẩu nhân viên",
+                template_name="emails/reset_password.html",
+                context={
+                    "name": employee.name,
+                    "reset_link": reset_link,
+                    "expires_minutes": 15,
+                },
+            )
+
+            print("\n" + "=" * 65)
+            print(f"[RESET PASSWORD] Tìm thấy nhân viên: {employee.name} (Mã: {employee.id}, Email: {employee.email})")
+            print(f"[RESET PASSWORD LINK] {reset_link}")
+            if sent:
+                print(f"[RESET PASSWORD] -> Đã gửi email đặt lại mật khẩu thành công qua SMTP.")
+            else:
+                print(f"[RESET PASSWORD WARNING] -> Không gửi được qua SMTP. Bạn có thể mở trực tiếp link trên để đổi mật khẩu.")
+            print("=" * 65 + "\n")
+        else:
+            print(f"\n[RESET PASSWORD] Không tìm thấy tài khoản nhân viên hợp lệ với email: '{clean_email}'")
+            print("[RESET PASSWORD HINT] Lưu ý: Chỉ nhân viên có email trong CSDL (bảng employees) mới nhận được link. Tài khoản admin thuần túy không có email trong CSDL.\n")
+
+    # Luôn báo thành công chung để bảo vệ quyền riêng tư người dùng
+    return templates.TemplateResponse(
+        request=request,
+        name="forgot_password.html",
+        context={
+            "success": "Nếu email tồn tại trên hệ thống, liên kết đặt lại mật khẩu đã được gửi đến hòm thư của bạn. Vui lòng kiểm tra email (bao gồm cả thư mục Spam).",
+            "csrf_token": refresh_csrf_token(request),
+            "page_title": "Quên mật khẩu",
+        },
+    )
+
+
+# 3. Trang đặt mật khẩu mới khi người dùng click link từ email
+@router.get("/reset-password", response_class=HTMLResponse)
+def reset_password_page(request: Request, token: str = ""):
+    """Trang biểu mẫu đặt lại mật khẩu mới từ liên kết trong email."""
+    token = (token or "").strip()
+    if not token:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Liên kết không hợp lệ hoặc thiếu mã xác thực.",
+                "token": "",
+                "csrf_token": get_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    data = verify_password_reset_token(token, max_age=900)
+    if not data:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Liên kết đặt lại mật khẩu đã hết hạn (sau 15 phút) hoặc không hợp lệ. Vui lòng yêu cầu lại.",
+                "token": "",
+                "csrf_token": get_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    user_id = data.get("user_id")
+    token_v = data.get("v")
+    with SessionLocal() as db:
+        user = get_user_by_id(db, user_id)
+        if not user or not user.is_active or (getattr(user, "session_version", 1) or 1) != token_v:
+            return templates.TemplateResponse(
+                request=request,
+                name="reset_password.html",
+                context={
+                    "error": "Liên kết này đã được sử dụng hoặc tài khoản không khả dụng. Vui lòng gửi lại yêu cầu mới.",
+                    "token": "",
+                    "csrf_token": get_csrf_token(request),
+                    "page_title": "Đặt lại mật khẩu",
+                },
+                status_code=400,
+            )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="reset_password.html",
+        context={
+            "token": token,
+            "csrf_token": get_csrf_token(request),
+            "page_title": "Đặt lại mật khẩu",
+        },
+    )
+
+
+# 4. Xử lý lưu mật khẩu mới
+@router.post("/reset-password")
+def handle_reset_password(
+    request: Request,
+    token: str = Form(""),
+    new_password: str = Form(""),
+    confirm_password: str = Form(None),
+    csrf_token: str = Form(""),
+):
+    """Xử lý cập nhật mật khẩu mới và hủy bỏ token/phiên đăng nhập cũ."""
+    token = (token or "").strip()
+    new_password = new_password or ""
+
+    if not verify_csrf_token(request.session.get("csrf_token"), csrf_token):
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Phiên làm việc đã hết hạn hoặc mã CSRF không hợp lệ.",
+                "token": token,
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    data = verify_password_reset_token(token, max_age=900)
+    if not data:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Liên kết đặt lại mật khẩu đã hết hạn (sau 15 phút) hoặc không hợp lệ. Vui lòng yêu cầu lại.",
+                "token": "",
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    if len(new_password) < 8:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Mật khẩu mới phải có ít nhất 8 ký tự.",
+                "token": token,
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    if len(new_password.encode("utf-8")) > 72:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Mật khẩu không được vượt quá 72 byte.",
+                "token": token,
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    if confirm_password is not None and new_password != confirm_password:
+        return templates.TemplateResponse(
+            request=request,
+            name="reset_password.html",
+            context={
+                "error": "Xác nhận mật khẩu mới không khớp.",
+                "token": token,
+                "csrf_token": refresh_csrf_token(request),
+                "page_title": "Đặt lại mật khẩu",
+            },
+            status_code=400,
+        )
+
+    user_id = data.get("user_id")
+    token_v = data.get("v")
+    with SessionLocal() as db:
+        user = get_user_by_id(db, user_id)
+        if not user or not user.is_active or (getattr(user, "session_version", 1) or 1) != token_v:
+            return templates.TemplateResponse(
+                request=request,
+                name="reset_password.html",
+                context={
+                    "error": "Liên kết này đã được sử dụng hoặc tài khoản không khả dụng.",
+                    "token": "",
+                    "csrf_token": refresh_csrf_token(request),
+                    "page_title": "Đặt lại mật khẩu",
+                },
+                status_code=400,
+            )
+
+        error = AuthService.reset_password_with_token(db, user, new_password)
+        if error:
+            return templates.TemplateResponse(
+                request=request,
+                name="reset_password.html",
+                context={
+                    "error": error,
+                    "token": token,
+                    "csrf_token": refresh_csrf_token(request),
+                    "page_title": "Đặt lại mật khẩu",
+                },
+                status_code=400,
+            )
+
+    request.session.clear()
+    return redirect(LOGIN_URL + "?reset=1")

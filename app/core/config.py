@@ -1,4 +1,9 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Định vị thư mục gốc hr_management để nạp file .env chính xác
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+ENV_FILE = BASE_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -18,10 +23,12 @@ class Settings(BaseSettings):
     emails_from_name: str = "Phòng Nhân Sự HR"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(str(ENV_FILE), ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    CHROMA_PERSIST_DIR: str = "./chroma_policy_db"
 
 
 settings = Settings()

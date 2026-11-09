@@ -35,3 +35,27 @@ def verify_csrf_token(session_token: str | None, form_token: str | None) -> bool
     except Exception:
         return False
 
+
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from app.core.config import settings
+
+RESET_TOKEN_SALT = "hr-password-reset-salt"
+
+
+def generate_password_reset_token(user_id: int, session_version: int) -> str:
+    """Tạo token đặt lại mật khẩu an toàn có kèm phiên bản session."""
+    serializer = URLSafeTimedSerializer(settings.session_secret_key, salt=RESET_TOKEN_SALT)
+    return serializer.dumps({"user_id": user_id, "v": session_version})
+
+
+def verify_password_reset_token(token: str, max_age: int = 900) -> dict | None:
+    """Xác thực token đặt lại mật khẩu (mặc định hết hạn sau 15 phút = 900 giây)."""
+    if not token:
+        return None
+    serializer = URLSafeTimedSerializer(settings.session_secret_key, salt=RESET_TOKEN_SALT)
+    try:
+        data = serializer.loads(token, max_age=max_age)
+        return data
+    except (SignatureExpired, BadSignature, Exception):
+        return None
+
