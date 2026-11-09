@@ -22,9 +22,11 @@ def get_department_by_id(db: Session, department_id: int):
 
 def get_department_by_name(db: Session, name: str):
     statement = select(Department)
-    statement = statement.where(Department.name==name)
-    department = db.scalar(statement)
-    return department
+    departments = db.scalars(statement).all()
+    for department in departments:
+        if department.name.lower() == name.lower():
+            return department
+    return None
 
 
 def add_department(db: Session, name: str):

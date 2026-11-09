@@ -217,6 +217,7 @@ def deactivate_employee(db: Session, employee_id: str):
     user = get_user_by_employee_id(db, employee.id)
     if user is not None:
         user.is_active = False
+        user.session_version = (getattr(user, "session_version", 1) or 1) + 1
 
     db.commit()
 
@@ -264,6 +265,36 @@ def delete_employee(db: Session, employee_id: str):
     remove_employee(db, employee)
     db.commit()
 
+
+def reset_employee_password(db: Session, employee_id: str):
+    employee = get_employee_by_id(db, employee_id)
+    if employee is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy nhân viên",
+        )
+    if employee.status == "Inactive":
+        raise HTTPException(
+            status_code=400,
+            detail="Nhân viên đã ngừng hoạt động"
+        )
+    user = get_user_by_employee_id(db, employee.id)
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Nhân viên chưa có tài khoản đăng nhập"
+        )
+    new_password = secrets.token_urlsafe(12)
+    user.password_hash = hash_password(new_password)
+    user.session_version = (getattr(user, "session_version", 1) or 1) + 1
+    db.commit()
+    credentials = {
+        "username": user.username,
+        "initial_password": new_password,
+        "email": employee.email,
+        "name": employee.name,
+    }
+    return credentials
 
 def generate_employee_id(db: Session) -> str:
     employee_ids = get_all_employee_ids(db)

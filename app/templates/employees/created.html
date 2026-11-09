@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% set page_title = 'Đã tạo nhân viên' %}
+{% set page_title = 'Đã đặt lại mật khẩu' if is_reset else 'Đã tạo nhân viên' %}
 {% set no_snapshot = true %}
 
 {% block description %}
-Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
+{% if is_reset %}Mật khẩu mới đã được tạo. Mật khẩu cũ không còn dùng được.{% else %}Hồ sơ và tài khoản đăng nhập đã được tạo thành công.{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -30,7 +30,7 @@ Hồ sơ và tài khoản đăng nhập đã được tạo thành công.
             </dd>
         </div>
         <div>
-            <dt id="credential-password-label">Mật khẩu ban đầu</dt>
+            <dt id="credential-password-label">{% if is_reset %}Mật khẩu mới{% else %}Mật khẩu ban đầu{% endif %}</dt>
             <dd>
                 <code id="credential-password">{{ credentials.initial_password }}</code>
                 <button type="button" class="button button-small button-stack copy-button" data-copy="credential-password" aria-describedby="credential-password-label" hidden>

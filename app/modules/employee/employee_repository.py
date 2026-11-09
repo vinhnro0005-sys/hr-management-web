@@ -1,4 +1,4 @@
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, func
 from sqlalchemy.orm import Session
 
 from app.modules.auth.auth_models import User
@@ -67,7 +67,7 @@ def get_employee_by_email(
         db: Session,
         email: str
 ):
-    statement = select(Employee).where(Employee.email == email)
+    statement = select(Employee).where(func.lower(Employee.email) == email.lower())
     return db.scalar(statement)
 
 

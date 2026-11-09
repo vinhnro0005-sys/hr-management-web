@@ -205,6 +205,7 @@ def deactivate_employee(employee_id: str, return_query: str = Depends(get_return
         status_code=303
     )
 
+
 @router.post("/employees/{employee_id}/activate")
 def activate_employee(employee_id: str, return_query: str = Depends(get_return_query)):
     with SessionLocal() as db:
@@ -224,4 +225,31 @@ def delete_employee(employee_id: str, return_query: str = Depends(get_return_que
     return RedirectResponse(
         url=f"/employees{suffix}",
         status_code=303
+    )
+
+
+@router.post("/employees/{employee_id}/reset-password")
+def reset_employee_password(request: Request, employee_id: str):
+    with SessionLocal() as db:
+        credentials = employee_service.reset_employee_password(db, employee_id)
+    if credentials["email"]:
+        send_email(
+            to_email=credentials["email"],
+            subject="Mật khẩu tài khoản nhân sự đã được đặt lại",
+            template_name="emails/welcome_account.html",
+            context={
+                "name": credentials["name"],
+                "username": credentials["username"],
+                "password": credentials["initial_password"],
+            }
+        )
+    return templates.TemplateResponse(
+        request=request,
+        name="employees/created.html",
+        context={
+            "employee_id": employee_id,
+            "credentials": credentials,
+            "is_reset": True,
+        },
+        headers={"Cache-Control": "no-store"},
     )
