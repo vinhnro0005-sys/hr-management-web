@@ -12,7 +12,16 @@ class EmployeeBase(BaseModel):
 
     department_id: int = Field(gt=0)
 
-    position: str | None = Field(default=None, max_length=100)
+    position: Literal[
+        "Giám đốc",
+        "Phó giám đốc",
+        "Trưởng phòng",
+        "Phó phòng",
+        "Trưởng nhóm",
+        "Chuyên viên",
+        "Nhân viên",
+        "Thực tập sinh",
+    ] | None = None
     phone: str | None = Field(default=None, max_length=20)
     email: str = Field(min_length=1, max_length=255)
     address: str | None = Field(default=None, max_length=255)
@@ -59,13 +68,6 @@ class EmployeeBase(BaseModel):
         if re.fullmatch(pattern, value) is None:
             raise ValueError("Email không đúng định dạng")
         return value
-    #POSITION
-    @field_validator("position")
-    @classmethod
-    def validate_position(cls, value: str | None):
-        if value is None:
-            return None
-        return value.capitalize()
 
     #SDT
     @field_validator("phone")

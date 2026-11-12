@@ -35,7 +35,7 @@ def seed():
                 id="NV001",
                 name="Nguyễn Văn A",
                 department_id=dept.id,
-                position="Lập trình viên",
+                position="Chuyên viên",
                 email="nguyenvana@example.com",
                 phone="0901234567",
                 gender="Nam",

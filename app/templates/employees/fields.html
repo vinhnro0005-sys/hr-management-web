@@ -71,7 +71,12 @@
     </div>
     <div class="field">
       <label for="position">Chức vụ</label>
-      <input id="position" {% if not profile_mode %}name="position"{% endif %} value="{{ form_data.get('position', '') }}" maxlength="100" autocomplete="organization-title"{% if profile_mode %} readonly{% endif %}{{ field_aria('position') }}>
+      <select id="position" {% if not profile_mode %}name="position"{% endif %} {% if profile_mode %}disabled{% endif %}{{ field_aria('position') }}>
+        <option value="">Chưa cập nhật</option>
+        {% for pos_name in ['Giám đốc', 'Phó giám đốc', 'Trưởng phòng', 'Phó phòng', 'Trưởng nhóm', 'Chuyên viên', 'Nhân viên', 'Thực tập sinh'] %}
+          <option value="{{ pos_name }}" {% if form_data.get('position') == pos_name %}selected{% endif %}>{{ pos_name }}</option>
+        {% endfor %}
+      </select>
       {{ field_error('position') }}
     </div>
     <div class="field">
